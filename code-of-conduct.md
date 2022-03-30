@@ -1,6 +1,4 @@
 # Code of Conduct
-## DIT638
-## Group 15
  
 This Code of Conduct establishes and communicates the commitment of Group 15 to uphold an essential set of obligations that aim to pass DIT 638 in a friendly and welcoming environment.
 ### How do we plan to collaborate?
