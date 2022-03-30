@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  project-dev:
+    build:
+      dockerfile: ./project-dev/dockerfile
+    image: dit638-g15-dev
+    volumes:
+      - ./project-dev:/development
+    container_name: dit638-g15
