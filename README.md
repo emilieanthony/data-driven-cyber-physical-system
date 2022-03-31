@@ -87,12 +87,31 @@ docker exec -it dit638-g15 bash
 
 From there you could start to work with the project.
 
+To work with example project, you can use follow commands inside docker image.
+
+~~~
+cd /example\ project\build
+cmake ..
+make
+make test
+./helloworld 4
+~~~
+
+It should output:
+
+~~~
+firstname, lastname;4 is a prime number? 0
+~~~
+
+You can use `exit` to leave the docker container bash.
+
 To remove the docker container:
 
 ~~~
 docker-compose down
 ~~~
 
+***
 Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
 ## Badges
