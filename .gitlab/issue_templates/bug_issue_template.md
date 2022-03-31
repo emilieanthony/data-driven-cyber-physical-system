@@ -2,6 +2,6 @@
 
 Explain what the problem is. 
 
-## Expected behavoir 
+## Expected behavior 
 
 Explain what the behavior should be
