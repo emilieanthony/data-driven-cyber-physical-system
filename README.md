@@ -21,7 +21,7 @@ More informtion will be added.
 - git: [Installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - an IDE (we recommand to use Vscode)
 
-After you installed all required tools, you could use the following commands to clone this repo and set up at your computer. 
+After you installed all required tools, you could use the following commands to clone this repo and set up at your computer.
 
 ~~~
 mkdir your-folder-name
@@ -72,11 +72,71 @@ Screen shots and videos will be added at the end of the project.
 
 ## Contributing
 
-State if you are open to contributions and what your requirements are for accepting them.
+### Way-of-working
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+#### Definition of Done
+To be able to ensure high quality of the system, we strive to meet the definition of done (DoD) during development. We consider features on a delivery team level as done when the product meets the requirements of the system. The requirements are set up by the team and in close collaboration with stakeholders. 
+ 
+ DoD for the project:
+- Code is reviewed
+- Acceptance critera met
+- Automated/manual (unit) tests pass
+- Integrated to a clean build
+- Non-functional requirements met
+- Meets compliance requirements
+- Functionality documented in necessary documentation
+- Stakeholders accept the feature
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+
+#### Protected main
+Our main branch is protected. This means that there are certain requirements to be met before a collaborator can push changes to the main branch.
+
+- We require an approved merge requests before being able to push
+- The pipeline should pass
+- The team member who initiates the merge request is the one responsible to merge it into main
+
+#### Branching
+
+#### Commits
+To ensure that our code is traceable we will strive to have small commits that focus on a single responsibility. 
+The commits should be linked to issues.
+
+
+##### Commit message structure
+We will follow the Conventional Commit structure for our commit messages. 
+We aim to link each commit to an open issue, using keywords. 
+
+Limit the subject line up to 50 characters. 
+
+Do not end the sentence with a period, plus use 
+
+```
+<type>[optional scope]: <description>
+```
+The commit body should consist of a maximum of 72 characters per line.  
+Explaining what was changed and the reason.
+```
+[optional body]
+[optional footer(s)]
+```
+
+Example: 
+```
+fix: minor typos in the code
+Typos were fixed in the code that was leading to problems
+in the system. Resolves #5. 
+```
+ 
+
+
+#### Merge Requests
+
+#### Code reviews
+
+### Adding new features
+
+### Fix unexpected behaviours
+
 
 ## Authors and acknowledgment
 
