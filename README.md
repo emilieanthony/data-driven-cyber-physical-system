@@ -21,7 +21,7 @@ More informtion will be added.
 - git: [Installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - an IDE (we recommand to use Vscode)
 
-After you installed all required tools, you could use the following commands to clone this repo and set up at your computer.
+After you installed all required tools, you could use the following commands to clone this repo and set up at your computer. 
 
 ~~~
 mkdir your-folder-name
