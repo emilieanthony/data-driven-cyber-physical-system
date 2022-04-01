@@ -44,7 +44,9 @@ From there you could start to work with the project.
 To work with example project, you can use follow commands inside docker image.
 
 ~~~
-cd /example\ project\build
+cd /example\ project
+mkdir build
+cd build
 cmake ..
 make
 make test
@@ -74,9 +76,11 @@ Screen shots and videos of the final product will be added at the end of the pro
 ### Way-of-working
 
 #### Definition of Done
-To be able to ensure high quality of the system, we strive to meet the definition of done (DoD) during development. We consider features on a delivery team level as done when the product meets the requirements of the system. The requirements are set up by the team and in close collaboration with stakeholders. 
- 
+
+To be able to ensure high quality of the system, we strive to meet the definition of done (DoD) during development. We consider features on a delivery team level as done when the product meets the requirements of the system. The requirements are set up by the team and in close collaboration with stakeholders.
+
  DoD for the project:
+
 - Code is reviewed
 - Acceptance critera met
 - Automated/manual (unit) tests pass
@@ -87,6 +91,7 @@ To be able to ensure high quality of the system, we strive to meet the definitio
 - Stakeholders accept the feature
 
 #### Protected main
+
 Our main branch is protected. This means that there are certain requirements to be met before a collaborator can push changes to the main branch.
 
 - We require an approved merge requests before being able to push
@@ -94,6 +99,7 @@ Our main branch is protected. This means that there are certain requirements to 
 - The team member who initiates the merge request is the one responsible to merge it into main
 
 #### Branching
+
 We will have a git-based workflow using branches. We will use topic branches which are short-lived branches that you create and use for a single particular feature or related work. Branches should be deleted after the feature is merged.
 Git commands
 
@@ -174,26 +180,31 @@ NOTE: The -d option only deletes the branch if it has already been merged. The -
 
 
 #### Commits
-To ensure that our code is traceable we will strive to have small commits that focus on one single responsibility. The commits should be linked to issues in order to ensure traceability. 
+
+To ensure that our code is traceable we will strive to have small commits that focus on one single responsibility. The commits should be linked to issues in order to ensure traceability.
 
 ##### Commit message structure
-We will follow the Conventional Commit structure for our commit messages. 
 
-Limit the subject line up to 50 characters. 
+We will follow the Conventional Commit structure for our commit messages.
 
-Do not end the sentence with a period, plus use 
+Limit the subject line up to 50 characters.
+
+Do not end the sentence with a period, plus use
 
 ```
 <type>[optional scope]: <description>
 ```
+
 The commit body should consist of a maximum of 72 characters per line.  
 Explaining what was changed and the reason.
+
 ```
 [optional body]
 [optional footer(s)]
 ```
 
-Example: 
+Example:
+
 ```
 fix: minor typos in the code
 Typos were fixed in the code that was leading to problems
@@ -201,13 +212,15 @@ in the system. Resolves #5.
 ```
 
 #### Merge Requests
+
 We strive to create clear merge requests to simplify code reviews from the team. In order to achieve this, we:
 
 - Follow the MR template
-- Strive to keep the MR small, i.e. strive for < 100 lines of code for each merge request if possible. 
+- Strive to keep the MR small, i.e. strive for < 100 lines of code for each merge request if possible.
 - Link to relevant issues and milestones
 
 #### Code reviews
+
 As a team, we strive to always ensure that our code base is of high quality. We help eachother to achive this byt conducting code reviews. The code review takes place after a merge request has been done. During a code review, pay attention to these aspects:
 
 1. Check if the code does what it is supposed to do. Does it meet the requirements? Will the stakeholders be happy with what we deliver?
@@ -215,16 +228,20 @@ As a team, we strive to always ensure that our code base is of high quality. We 
 3. Is the code able to accommodate potential changes in the future?
 4. Look at the potential for improvements. Is there a simpler way to achieve the same goals?
 5. Is the code well-documented? Are the commit messages clear and follow the standard?
-6. Keep a friendly tone and create a kind environment. Giving compliments is always appreciated. 
+6. Keep a friendly tone and create a kind environment. Giving compliments is always appreciated.
 
 ### Adding new features
+
 Before adding new features, we decide as a team on what to implement during Sprint planning meetings. Features are distributed during the meeting. When assignmed a feature, we:
+
 - Create a new issue on GitLab
 - The issue should contain what requirements it is linked to, relevant labels and acceptance criteria
 - When the implementation is done, create a merge request
 
 ### Fix unexpected behaviours
+
 If unexpected behaviours are found, we appreciate if the issues are acknowledges and fixed.
+
 - Create an issue to report the behavior
 - If needed, discuss priority of the issue within the team
 - Explain the unexpected behavior and what the expected behavior is supposed to be
@@ -233,7 +250,8 @@ If unexpected behaviours are found, we appreciate if the issues are acknowledges
 
 ## Authors and acknowledgment
 
-### Contributors:
+### Contributors
+
 - Astrid Berntsson
 - Emilie Anthony
 - Olga Ratushniak
@@ -246,4 +264,4 @@ See [LICENSE](https://git.chalmers.se/courses/dit638/students/2022-group-15/-/bl
 
 ## Project status
 
-This project is part of the course DIT638 that runs from March 2022 to May 2022. 
+This project is part of the course DIT638 that runs from March 2022 to May 2022.
