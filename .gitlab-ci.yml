@@ -35,7 +35,6 @@ before_script:
 
 # This section describes what shall be done to build and test the project.
 build-and-test:
-on: [push, pull_request]
   tags:
     - docker-build
   stage: build
@@ -44,10 +43,11 @@ on: [push, pull_request]
 
 # This section describes what shall be done to deploy artefacts from the project.
 release:
-on: [release]
   tags:
     - docker-build
   stage: deploy
+  rules: 
+    - if: $CI_COMMIT_TAG
   script:
     - docker build -f Dockerfile -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
     - docker push "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG"
