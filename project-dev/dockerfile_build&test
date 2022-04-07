@@ -7,7 +7,7 @@ RUN cd /development &&\
     mkdir build &&\
     cd build && \
     cmake .. && \
-    make && make test
+    make && make test && ./helloworld-Runner
 # RUN make test
 
 # ./helloworld-Runner
