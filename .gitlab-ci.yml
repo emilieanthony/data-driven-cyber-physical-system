@@ -39,6 +39,8 @@ build-and-test:
     - docker-build
   only: 
     - pushes
+  except:
+    - tags
   stage: build
   script:
     - docker build -f $(pwd)/src/dockerfile_build&test .
