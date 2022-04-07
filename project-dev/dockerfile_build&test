@@ -7,5 +7,6 @@ RUN mkdir build
 RUN cd build
 RUN cmake ..
 RUN make 
-RUN ./helloworld
-# RUN make test
+RUN make test
+
+# RUN ./helloworld
