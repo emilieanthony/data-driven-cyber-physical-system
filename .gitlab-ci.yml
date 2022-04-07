@@ -43,8 +43,8 @@ build-and-test:
     - tags
   stage: build
   script:
-    - docker build -f $(pwd)/src/dockerfile_build&test -t build&test:latest . 
-    - docker run -it build&test:latest bash
+    - docker build -f $(pwd)/src/dockerfile_buildtest -t buildtest:latest . 
+    - docker run -it buildtest:latest bash
     - cd /development
     - mkdir build
     - cd build
@@ -62,5 +62,5 @@ release:
     - if: $CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/
   
   script:
-    - docker build -f $(pwd)/src/dockerfile_build&test -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
+    - docker build -f $(pwd)/src/dockerfile_buildtest -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
     - docker push "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG"
