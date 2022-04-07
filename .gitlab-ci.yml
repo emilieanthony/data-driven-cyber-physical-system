@@ -45,7 +45,7 @@ build-and-test:
   script:
     - docker build -f $(pwd)/project-dev/dockerfile_buildtest -t buildtest:latest . 
     - docker run -it buildtest:latest bash
-    - cd /development
+    - cd /src
     - mkdir build
     - cd build
     - cmake ..
