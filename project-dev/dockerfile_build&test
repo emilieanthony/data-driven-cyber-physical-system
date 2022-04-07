@@ -3,11 +3,4 @@ RUN apt-get -y update
 RUN apt-get -y install build-essential cmake wget
 ADD /src /development
 WORKDIR /development
-RUN cd /development &&\
-    mkdir build &&\
-    cd build && \
-    cmake .. && \
-    make && make test && ./helloworld-Runner
-# RUN make test
 
-# ./helloworld-Runner

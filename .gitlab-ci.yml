@@ -43,7 +43,15 @@ build-and-test:
     - tags
   stage: build
   script:
-    - docker build -f $(pwd)/src/dockerfile_build&test .
+    - docker build -f $(pwd)/src/dockerfile_build&test -t build&test:latest . 
+    - docker run -it build&test:latest bash
+    - cd /development
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+    - make test
+    - ./helloworl-Runner
 
 # This section describes what shall be done to deploy artefacts from the project.
 release:
