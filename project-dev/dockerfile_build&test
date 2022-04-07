@@ -1,12 +1,13 @@
 FROM ubuntu:18.04
 RUN apt-get -y update
 RUN apt-get -y install build-essential cmake wget
+ADD /src /development
 WORKDIR /development
-COPY /src /development/
-RUN mkdir build
-RUN cd build
-RUN cmake ..
-RUN make 
-RUN make test
+RUN cd /development &&\
+    mkdir build &&\
+    cd build && \
+    cmake .. && \
+    make && make test
+# RUN make test
 
-# RUN ./helloworld
+# ./helloworld-Runner
