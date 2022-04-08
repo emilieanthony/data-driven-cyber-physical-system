@@ -25,9 +25,17 @@ Every group member will be able to stay informed by checking our main communicat
 ### What is our usual communication plan?
 - We will try to communicate as much as possible through Discord and at face-to-face meetings once or twice every week as mentioned above in “Meetings”.
 - All team members should check Discord, Gitlab and Trello regularly within working hours in order to stay informed about the progress and provide assistance to other team members.
+- During remote/face-to-face meetings, we will strive toward having structured meetings with a clear agenda and goal. 
+- We will create a safe environment for every team member to express their thoughts by actively listening, building on each other's ideas and confirming understanding.
+- We will assign team members to tasks in order to ensure effective communication. By having clear responsibilities it will be clear which group member to reach out to for any questions regarding a task. 
+
 ### How will we solve conflicts? 
 - The group will strive toward consensus however if it cannot be achieved, decisions will be made with a majority vote. 
 - Discussion on task distribution will be done at Friday's meeting. All conflicting opinions about tasks should be discussed during these meetings.
 - Members will be able to give feedback during Sprint Retrospective on Friday.
 - Members are required to arrive on time to the meetings and notify the group if you will be late for more than 15 minutes.
+- Every speaker should have the opportunity to express their ideas, and it is everyone else’s duty to listen. A simple rule of listening first, talking second. 
+- The group should encourage collaboration. There is no such thing as a “bad” idea, everyone should be able to share their ideas openly. 
+- The group strives on growing together, everyone should be open to feedback, and feedback should be constructive. 
+
 
