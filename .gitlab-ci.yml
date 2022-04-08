@@ -43,7 +43,7 @@ build-and-test:
     - tags
   stage: build
   script:
-    - docker build -f $(pwd)/project-dev/dockerfile_buildtest . 
+    - docker build -f $(pwd)/src/dockerfile_buildtest . 
 
 
 # This section describes what shall be done to deploy artefacts from the project.
