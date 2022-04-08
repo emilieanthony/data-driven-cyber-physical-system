@@ -2,6 +2,12 @@ FROM ubuntu:18.04
 RUN apt-get -y update
 RUN apt-get -y install build-essential cmake wget
 WORKDIR /development
-ADD . /development
+ADD /src /development
+RUN cd /development && \
+    mkdir build && \
+    cd build && \
+    cmake  .. && \
+    make 
+RUN make test
 
 
