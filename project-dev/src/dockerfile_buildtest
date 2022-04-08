@@ -4,6 +4,7 @@ RUN apt-get -y install build-essential cmake wget
 ADD . /development
 WORKDIR /development
 RUN cd /development &&\
+    ls &&\
     mkdir build &&\
     cd build && \
     cmake .. && \
