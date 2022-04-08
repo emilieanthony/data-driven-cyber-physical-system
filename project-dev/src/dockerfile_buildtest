@@ -8,5 +8,5 @@ RUN cd /development &&\
     mkdir build &&\
     cd build && \
     cmake .. && \
-    make
-RUN make test
+    make && make test 
+# RUN make test
