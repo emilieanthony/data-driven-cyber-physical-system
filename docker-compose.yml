@@ -3,8 +3,8 @@ services:
   project-dev:
     image: dit638-g15-dev
     build:
-      dockerfile: ./project-dev/dockerfile
-    
+      dockerfile: ./project-dev/dockerfile_example
+
     volumes:
       - ./project-dev:/development
     container_name: dit638-g15
