@@ -1,5 +1,9 @@
 # 2022-group-15
 
+## Badges
+ <img src="https://git.chalmers.se/courses/dit638/students/2022-group-15/badges/main/pipeline.svg">
+ <img src="https://git.chalmers.se/courses/dit638/students/2022-group-15/badges/main/coverage.svg">
+
 ## Name
 
 Project: DIT638 Cyber-Physical Systems and Systems-of-Systems
