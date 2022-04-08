@@ -7,5 +7,5 @@ RUN cd /development &&\
     mkdir build &&\
     cd build && \
     cmake .. && \
-    make\
-    RUN make test
+    make
+RUN make test
