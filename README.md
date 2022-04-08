@@ -1,8 +1,8 @@
 # 2022-group-15
 
 ## Badges
-![pipeline] <img source="https://git.chalmers.se/courses/dit638/students/2022-group-15/badges/main/pipeline.svg">
-![coverage] <img source="https://git.chalmers.se/courses/dit638/students/2022-group-15/badges/main/coverage.svg">
+ <img src="https://git.chalmers.se/courses/dit638/students/2022-group-15/badges/main/pipeline.svg">
+ <img src="https://git.chalmers.se/courses/dit638/students/2022-group-15/badges/main/coverage.svg">
 
 ## Name
 
