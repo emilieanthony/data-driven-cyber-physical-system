@@ -27,6 +27,7 @@ services:
 stages:
   - build
   - deploy
+  - coverage
 
 # Display information before we start the build.
 before_script:
@@ -59,8 +60,24 @@ release:
     - docker push "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG"
 
 coverage:
+  image: ubuntu:18.04
   stage: deploy
   tags: 
     - docker-build
-  script: 
-    - docker build -f $(pwd)/project-dev/src/dockerfile_buildtest . 
+  before_script:
+    - apt-get -qq update && apt-get -qq install -y gcovr ggcov lcov
+  script:
+    - cd project-dev/src
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+    - make test
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}/project-dev/src
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    expire_in: 60 days
+    reports:
+      cobertura: build/coverage.xml
+
