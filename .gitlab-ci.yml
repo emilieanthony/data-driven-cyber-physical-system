@@ -68,7 +68,7 @@ coverage:
   tags: 
     - docker-build
   before_script:
-    - apt-get -qq update && apt-get -qq install -y gcovr ggcov lcov
+    - apt-get -qq update && apt-get -qq install -y gcovr ggcov lcov build-essential cmake
   script:
     - cd project-dev/src
     - mkdir build
