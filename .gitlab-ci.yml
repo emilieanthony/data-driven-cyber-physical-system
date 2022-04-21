@@ -83,5 +83,5 @@ coverage:
     name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
     expire_in: 60 days
     reports:
-      cobertura: build/coverage.xml
+      cobertura: project-dev/src/build/coverage.xml
 
