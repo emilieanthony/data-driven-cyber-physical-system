@@ -75,6 +75,7 @@ coverage:
     - cd build
     - cmake ..
     - make
+    - ls
     - make test
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}/project-dev/src
   coverage: /^\s*lines:\s*\d+.\d+\%/
