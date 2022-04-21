@@ -77,6 +77,11 @@ coverage:
     - make
     - ls
     - make test
+    - gcov helloworld.cpp
+    - lcov --directory . --capture --output-file coverage.info
+    - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+    - lcov --list coverage.info
+    - genhtml -o res coverage.info
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}/project-dev/src
   coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
