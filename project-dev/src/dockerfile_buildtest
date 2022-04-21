@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 RUN apt-get -y update
-RUN apt-get -y install build-essential cmake wget
+RUN apt-get -y install build-essential cmake wget gcovr ggcov lcov
 ADD /project-dev/src /development
 WORKDIR /development
 RUN cd /development &&\
@@ -8,5 +8,8 @@ RUN cd /development &&\
     mkdir build &&\
     cd build && \
     cmake .. && \
-    make && make test 
-# RUN make test
+    make && make test && \
+    # coverage 
+    gcov helloworld.cpp && \
+    lcov --directory . --capture --output-file coverage.info && \
+    lcov --list coverage.info

@@ -57,3 +57,10 @@ release:
   script:
     - docker build -f $(pwd)/project-dev/src/dockerfile_buildtest -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
     - docker push "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG"
+
+coverage:
+  stage: deploy
+  tags: 
+    - docker-build
+  script: 
+    - docker build -f $(pwd)/project-dev/src/dockerfile_buildtest . 
