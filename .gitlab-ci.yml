@@ -62,6 +62,10 @@ release:
 coverage:
   image: ubuntu:18.04
   stage: deploy
+  only: 
+    - pushes
+  except:
+    - tags
   tags: 
     - docker-build
   before_script:
