@@ -23,7 +23,6 @@
 // Include the GUI and image processing header files from OpenCV
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <chrono>
 
 int32_t main(int32_t argc, char **argv) {
     int32_t retCode{1};
@@ -85,26 +84,6 @@ int32_t main(int32_t argc, char **argv) {
                     img = wrapped.clone();
                 }
                 // TODO: Here, you can add some code to check the sampleTimePoint when the current frame was captured.
-                // SampletimePoint
-                std::pair< bool, cluon::data::TimeStamp > ts = sharedMemory->getTimeStamp();
-                int64_t tsMs = cluon::time::toMicroseconds(std::get<1>(ts));
-
-                // UTC
-                char MY_TIME[50];
-                cluon::data::TimeStamp tp = cluon::time::now();
-                std::time_t utcSeconds = tp.seconds();
-                std::tm* utc = std::gmtime(&utcSeconds);
-
-                //name
-                //std::string text = "ts: " + std::to_string(tsMs) + " Berntsson Astrid";
-                strftime(MY_TIME, sizeof(MY_TIME), "%FT%TZ", utc);
-                
-                std::string text = "Now: ";
-                text.append(MY_TIME);
-                text.append( "; ts: " + std::to_string(tsMs) + "; Berntsson, Astrid");
-
-                // std::string text = std::put_time(utc, "%c %Z");
-
 
                 sharedMemory->unlock();
 
@@ -112,8 +91,6 @@ int32_t main(int32_t argc, char **argv) {
                 // Example: Draw a red rectangle and display image.
                 cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
                 //cv::putText(img, "Berntsson, Astrid", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX ,0.5, cv::Scalar(255,255,255)); // Draw the text
-                cv::putText(img, text, cv::Point(10,50), cv::FONT_HERSHEY_SIMPLEX ,0.5, cv::Scalar(255,255,255)); // Draw the text
-
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
