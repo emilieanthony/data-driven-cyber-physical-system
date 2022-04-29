@@ -59,21 +59,21 @@ find_package(Threads REQUIRED)
 ################################################################################
 # Extract cluon-msc from cluon-complete.hpp.
 # cluon-msc is the message compiler that compiles a .odvd message specification into a header-only C++ file.
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cluon-msc
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cluon-msc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${CLUON_COMPLETE} ${CMAKE_CURRENT_SOURCE_DIR}/cluon-complete.hpp
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/cluon-complete.hpp ${CMAKE_CURRENT_SOURCE_DIR}/cluon-complete.cpp
-    COMMAND ${CMAKE_CXX_COMPILER} -o ${CMAKE_BINARY_DIR}/cluon-msc ${CMAKE_CURRENT_SOURCE_DIR}/cluon-complete.cpp -std=c++14 -pthread -D HAVE_CLUON_MSC
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/cluon-complete.hpp ${CMAKE_CURRENT_SOURCE_DIR}/cluon-complete.cpp
+    COMMAND ${CMAKE_CXX_COMPILER} -o ${CMAKE_CURRENT_SOURCE_DIR}/cluon-msc ${CMAKE_CURRENT_SOURCE_DIR}/cluon-complete.cpp -std=c++14 -pthread -D HAVE_CLUON_MSC
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${CLUON_COMPLETE})
 
 ################################################################################
 # Generate opendlv-standard-message-set.hpp from ${OPENDLV_STANDARD_MESSAGE_SET} file.
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${CMAKE_BINARY_DIR}/cluon-msc --cpp --out=${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp ${CMAKE_CURRENT_SOURCE_DIR}/${OPENDLV_STANDARD_MESSAGE_SET}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${OPENDLV_STANDARD_MESSAGE_SET} ${CMAKE_BINARY_DIR}/cluon-msc)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/opendlv-standard-message-set.hpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cluon-msc --cpp --out=${CMAKE_CURRENT_SOURCE_DIR}/opendlv-standard-message-set.hpp ${CMAKE_CURRENT_SOURCE_DIR}/${OPENDLV_STANDARD_MESSAGE_SET}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${OPENDLV_STANDARD_MESSAGE_SET} ${CMAKE_CURRENT_SOURCE_DIR}/cluon-msc)
 # Add current build directory as include directory as it contains generated files.
-include_directories(SYSTEM ${CMAKE_BINARY_DIR})
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ################################################################################
@@ -99,7 +99,7 @@ add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.cpp)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 # Add dependency to OpenDLV Standard Message Set.
-add_custom_target(generate_opendlv_standard_message_set_hpp DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
+add_custom_target(generate_opendlv_standard_message_set_hpp DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opendlv-standard-message-set.hpp)
 add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 
 ################################################################################
