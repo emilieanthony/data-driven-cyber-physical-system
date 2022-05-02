@@ -72,6 +72,8 @@ int32_t main(int32_t argc, char **argv) {
             while (od4.isRunning()) {
                 // OpenCV data structure to hold an image.
                 cv::Mat img;
+                cv::Mat hsvImg;    // HSV Image
+                cv::Mat threshImg;   // Thresh Image
 
                 // Wait for a notification of a new frame.
                 sharedMemory->wait();
@@ -88,6 +90,21 @@ int32_t main(int32_t argc, char **argv) {
                 sharedMemory->unlock();
 
                 // TODO: Do something with the frame.
+
+                int hmin = 15;
+                int hmax = 28;
+                int smin = 28;
+                int smax = 167;
+                int vmin = 108;
+                int vmax = 247;
+
+                cv::cvtColor(img, hsvImg, CV_BGR2HSV);      // Convert Original Image to HSV Thresh Image
+                cv::inRange(hsvImg, cv::Scalar(hmin, smin, vmin), cv::Scalar(hmax, smax, vmax), threshImg);
+
+                cv::GaussianBlur(threshImg, threshImg, cv::Size(3, 3), 0);   //Blur Effect
+                cv::dilate(threshImg, threshImg, 0);        // Dilate Filter Effect
+                cv::erode(threshImg, threshImg, 0);         // Erode Filter Effect
+
                 // Example: Draw a red rectangle and display image.
                 cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
                 //cv::putText(img, "Berntsson, Astrid", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX ,0.5, cv::Scalar(255,255,255)); // Draw the text
@@ -100,7 +117,9 @@ int32_t main(int32_t argc, char **argv) {
 
                 // Display image on your screen.
                 if (VERBOSE) {
-                    cv::imshow(sharedMemory->name().c_str(), img);
+                    //cv::imshow(sharedMemory->name().c_str(), img);
+                    cv::imshow("Original frame", img);     // show windows
+                    cv::imshow("threshImg", threshImg);
                     cv::waitKey(1);
                 }
             }
