@@ -24,6 +24,22 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+// Yellow hsv values
+const int hMinY = 15;
+const int hMaxY = 28;
+const int sMinY = 28;
+const int sMaxY = 167;
+const int vMinY = 108;
+const int vMaxY = 247;
+
+// Blue hsv values
+const int hMinB = 118;
+const int hMaxB = 179;
+const int sMinB = 78;
+const int sMaxB = 125;
+const int vMinB = 35;
+const int vMaxB = 63;
+
 int32_t main(int32_t argc, char **argv) {
     int32_t retCode{1};
     // Parse the command line parameters as we require the user to specify some mandatory information on startup.
@@ -89,26 +105,30 @@ int32_t main(int32_t argc, char **argv) {
 
                 sharedMemory->unlock();
 
-                // TODO: Do something with the frame.
-
-                int hmin = 15;
-                int hmax = 28;
-                int smin = 28;
-                int smax = 167;
-                int vmin = 108;
-                int vmax = 247;
-
+                // TODO: Do something with the frame.                
                 cv::cvtColor(img, hsvImg, CV_BGR2HSV);      // Convert Original Image to HSV Thresh Image
-                cv::inRange(hsvImg, cv::Scalar(hmin, smin, vmin), cv::Scalar(hmax, smax, vmax), threshImg);
+                cv::inRange(hsvImg, cv::Scalar(hMinY, sMinY, vMinY), cv::Scalar(hMaxY, sMaxY, vMaxY), threshImg);
+
+                //width = 640
+                //height = 480 / 3
+                // cv::Mat crop = threshImg(cv::Range(80,280),cv::Range(150,330)); // Slicing to crop the image                
 
                 cv::GaussianBlur(threshImg, threshImg, cv::Size(3, 3), 0);   //Blur Effect
                 cv::dilate(threshImg, threshImg, 0);        // Dilate Filter Effect
                 cv::erode(threshImg, threshImg, 0);         // Erode Filter Effect
 
-                // Example: Draw a red rectangle and display image.
-                cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
-                //cv::putText(img, "Berntsson, Astrid", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX ,0.5, cv::Scalar(255,255,255)); // Draw the text
+                std::vector<std::vector<cv::Point> > contours;  // mulitdimensional dynamic array
+                std::vector<cv::Vec4i> hierarchy;
+                cv::findContours(threshImg, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
+                // Draw the contours 
+                //cv::Mat image_copy = threshImg.clone();
+                //cv::drawContours(img, contours, -1, cv::Scalar(0, 255, 0), 2));
+                
+
+
+                // Example: Draw a red rectangle and display image.
+                // cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
@@ -120,6 +140,8 @@ int32_t main(int32_t argc, char **argv) {
                     //cv::imshow(sharedMemory->name().c_str(), img);
                     cv::imshow("Original frame", img);     // show windows
                     cv::imshow("threshImg", threshImg);
+                    // cv::imshow("Cropped Img", crop);
+
                     cv::waitKey(1);
                 }
             }
