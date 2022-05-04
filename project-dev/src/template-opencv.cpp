@@ -83,14 +83,25 @@ int32_t main(int32_t argc, char **argv) {
                     cv::Mat wrapped(HEIGHT, WIDTH, CV_8UC4, sharedMemory->data());
                     img = wrapped.clone();
                 }
+
+                auto [_, ts] = sharedMemory->getTimeStamp();
+                auto ms = static_cast<int64_t>(ts.seconds()) * static_cast<int64_t>(1000 * 1000) + static_cast<int64_t>(ts.microseconds());
+                std::string output = "TS: " + std::to_string(ms) + "; GROUND STEERING: " + std::to_string(gsr.groundSteering());
                 // TODO: Here, you can add some code to check the sampleTimePoint when the current frame was captured.
 
                 sharedMemory->unlock();
+            
 
                 // TODO: Do something with the frame.
                 // Example: Draw a red rectangle and display image.
                 cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
-                //cv::putText(img, "Berntsson, Astrid", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX ,0.5, cv::Scalar(255,255,255)); // Draw the text
+                cv::putText(img, //target image
+                    output, //text
+                    cv::Point(0, img.rows / 2), //top-left position
+                    cv::FONT_HERSHEY_PLAIN,
+                    1.0,
+                    CV_RGB(255, 255, 255), //font color
+                1);
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
