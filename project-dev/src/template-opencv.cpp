@@ -27,11 +27,11 @@
 
 // Yellow hsv values
 const int hMinY = 15;
-const int hMaxY = 28;
-const int sMinY = 28;
-const int sMaxY = 167;
-const int vMinY = 108;
-const int vMaxY = 247;
+const int hMaxY = 25;
+const int sMinY = 75;
+const int sMaxY = 185;
+const int vMinY = 147;
+const int vMaxY = 255;
 
 // Blue hsv values
 const int hMinB = 100;
