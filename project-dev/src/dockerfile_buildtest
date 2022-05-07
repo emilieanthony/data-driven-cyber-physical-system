@@ -35,7 +35,7 @@ RUN apt-get install -y --no-install-recommends \
     libopencv-dev
 
 # Include this source tree and compile the sources
-ADD /project-dev/src /opt/sources
+ADD . /opt/sources
 WORKDIR /opt/sources
 RUN mkdir build && \
     cd build && \
@@ -56,7 +56,8 @@ RUN apt-get update -y && \
 RUN apt-get install -y --no-install-recommends \
     libopencv-core3.2 \
     libopencv-highgui3.2 \
-    libopencv-imgproc3.2 
+    libopencv-imgproc3.2 \
+    libopencv-features2d3.2
 
 WORKDIR /usr/bin
 COPY --from=builder /tmp/bin/template-opencv .
