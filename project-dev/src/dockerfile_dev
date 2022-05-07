@@ -27,3 +27,26 @@ RUN mkdir build && \
     cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/tmp .. && \
     make && make install
 ENTRYPOINT [ "tail","-f","/dev/null" ]
+
+# To use this docker file for development you need to have all other docker containers(opendlv-vehicle-view, h264decoder) running, playing video playback and run following cmd under src folder:
+
+# docker build -f $(pwd)/dockerfile_dev -t group15-opencv-dev . 
+
+# docker run -it --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp -v $(pwd):/opt/sources/dev group15-opencv-dev
+
+# then you could use VScode's docker extension(VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) to attach to the vscode to the container
+# Upon the new vscode window connected to the container, you should be able to edit the template-opencv.cpp file. 
+# There are 2 template-opencv.cpp file, one is located at /opt/sources and another is located at /opt/sources/dev folder.
+# The file in /opt/sources is not sync with the file outside the docker, while the file in /opt/sources/dev is sync with the file outside the docker. You could just edit the template-opencv.cpp file in the /opt/sources/dev for the development.
+# To run the application, you will run following cmd under /opt/sources/dev:
+
+# mkdir build && \
+# cd build && \
+# cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/tmp .. && \
+# make && make install
+
+# then you will find a binary file named template-opencv in the /opt/sources/dev/build folder.
+# to run the app you should run following cmd:
+# ./template-opencv --cid=253 --name=img --width=640 --height=480 --verbose
+# you should have a running app in your x-server client window.
+# if you have any problem, you can reach me via discord.
