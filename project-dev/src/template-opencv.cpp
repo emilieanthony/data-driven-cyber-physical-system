@@ -140,25 +140,70 @@ int32_t main(int32_t argc, char **argv)
                 // conver to gray scale
                 // draw blue cones' contour
                 cv::Mat blue_channels[3];
-                cv::split(blueThreshImg,blue_channels);
+                cv::split(blueThreshImg, blue_channels);
                 cv::Mat blue_gray = blue_channels[0];
-                cv::Canny(blue_gray,canny_blue,50,60);
+                cv::Canny(blue_gray, canny_blue, 50, 60);
                 cv::findContours(canny_blue, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-                cv::drawContours(cropedImg, contours, -1, cv::Scalar(0,255,0), 2);
+                // get the moments
+                if (contours.size() > 0)
+                {
+                    std::vector<cv::Moments> mu(contours.size());
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        mu[i] = cv::moments(contours[i], false);
+                    }
+
+                    // get the centroid of figures.
+                    std::vector<cv::Point2f> mc(contours.size());
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        mc[i] = cv::Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
+                    }
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        cv::Scalar color = cv::Scalar(0, 0, 255); // B G R values
+                        circle(cropedImg, mc[i], 4, color, -1, 8, 0);
+                    }
+                }
+
+                cv::drawContours(cropedImg, contours, -1, cv::Scalar(0, 255, 0), 2);
 
                 // draw yellow cones' contour
                 cv::Mat yellow_channels[3];
-                cv::split(yellowThreshImg,yellow_channels);
-                blue_gray= yellow_channels[0];
+                cv::split(yellowThreshImg, yellow_channels);
+                blue_gray = yellow_channels[0];
                 // cv::Mat canny_blue;
                 // cv::Canny(hsv_channels[0],canny_blue,50,200,3);
 
-                cv::Canny(blue_gray,canny_blue,50,60);
+                cv::Canny(blue_gray, canny_blue, 50, 60);
 
                 cv::findContours(canny_blue, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+                if (contours.size() > 0)
+                {   
+                    // get the moments
+                    std::vector<cv::Moments> mu(contours.size());
+
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        mu[i] = cv::moments(contours[i], false);
+                    }
+
+                    // get the centroid of figures.
+                    std::vector<cv::Point2f> mc(contours.size());
+
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        mc[i] = cv::Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
+                    }
+                    for (int i = 0; i < contours.size(); i++)
+                    {
+                        cv::Scalar color = cv::Scalar(167, 151, 0); // B G R values
+                        circle(cropedImg, mc[i], 4, color, -1, 8, 0);
+                    }
+                }
 
                 // draw contours on the original image
-                cv::drawContours(cropedImg, contours, -1, cv::Scalar(255,0,0), 2);
+                cv::drawContours(cropedImg, contours, -1, cv::Scalar(255, 0, 0), 2);
 
                 // cv::bitwise_or(blueThreshImg, yellowThreshImg, bnyThreshImg);
 
