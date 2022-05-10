@@ -39,7 +39,7 @@ const int hMaxB = 140;
 // S-values:
 // minValue: 75 is too low because it will show the things with high reflections
 // 150 will only show the clostest ones
-const int sMinB = 150;
+const int sMinB = 120;
 const int sMaxB = 255;
 // V-values:
 // 40-120 works
@@ -134,48 +134,33 @@ int32_t main(int32_t argc, char **argv)
                 // TODO: Do something with the frame.
                 cv::inRange(hsvImg, cv::Scalar(hMinB, sMinB, vMinB), cv::Scalar(hMaxB, sMaxB, vMaxB), blueThreshImg);
                 cv::inRange(hsvImg, cv::Scalar(hMinY, sMinY, vMinY), cv::Scalar(hMaxY, sMaxY, vMaxY), yellowThreshImg);
+                cv::Mat canny_blue;
+                std::vector<std::vector<cv::Point>> contours;
+                std::vector<cv::Vec4i> hierarchy;
+                // conver to gray scale
+                // draw blue cones' contour
+                cv::Mat blue_channels[3];
+                cv::split(blueThreshImg,blue_channels);
+                cv::Mat blue_gray = blue_channels[0];
+                cv::Canny(blue_gray,canny_blue,50,60);
+                cv::findContours(canny_blue, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+                cv::drawContours(cropedImg, contours, -1, cv::Scalar(0,255,0), 2);
 
-                // blob detection
-                cv::SimpleBlobDetector::Params params;
+                // draw yellow cones' contour
+                cv::Mat yellow_channels[3];
+                cv::split(yellowThreshImg,yellow_channels);
+                blue_gray= yellow_channels[0];
+                // cv::Mat canny_blue;
+                // cv::Canny(hsv_channels[0],canny_blue,50,200,3);
 
-                // Change thresholds
-                // params.minThreshold = 10;
-                // params.maxThreshold = 200;
+                cv::Canny(blue_gray,canny_blue,50,60);
 
-                // // Filter by Area.
-                params.filterByArea = true;
-                params.minArea = 10;
-                params.maxArea = 5000;
+                cv::findContours(canny_blue, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
-                // // Filter by Circularity
-                // params.filterByCircularity = true;
-                // params.minCircularity = 0.1;
+                // draw contours on the original image
+                cv::drawContours(cropedImg, contours, -1, cv::Scalar(255,0,0), 2);
 
-                // // Filter by Convexity
-                // params.filterByConvexity = true;
-                // params.minConvexity = 0.87;
-
-                // // Filter by Inertia
-                // params.filterByInertia = true;
-                // params.minInertiaRatio = 0.01;
-                // params.filterByColor = true;
-                // params.blobColor = 255;
-
-                // Storage for blobs
-                std::vector<cv::KeyPoint> keypoints;
-
-                // Set up detector with params
-                cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
-
-                // Detect blobs
-                detector->detect(blueThreshImg, keypoints);
-
-                // Draw detected blobs as red circles.
-                // DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures the size of the circle corresponds to the size of blob
-                cv::Mat blueImgWithKeypoints;
-                cv::drawKeypoints(yellowThreshImg, keypoints, blueImgWithKeypoints, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-
-                cv::bitwise_or(blueThreshImg, yellowThreshImg, bnyThreshImg);
+                // cv::bitwise_or(blueThreshImg, yellowThreshImg, bnyThreshImg);
 
                 // width = 640
                 // height = 480 / 3
@@ -189,13 +174,13 @@ int32_t main(int32_t argc, char **argv)
                             CV_RGB(255, 255, 255), // font color
                             1);
 
-                cv::GaussianBlur(bnyThreshImg, blurImg, cv::Size(3, 3), 0); // Blur Effect
-                cv::dilate(bnyThreshImg, dilateImg, 0);                     // Dilate Filter Effect
-                cv::erode(bnyThreshImg, erodeImg, 0);                       // Erode Filter Effect
+                // cv::GaussianBlur(bnyThreshImg, blurImg, cv::Size(3, 3), 0); // Blur Effect
+                // cv::dilate(bnyThreshImg, dilateImg, 0);                     // Dilate Filter Effect
+                // cv::erode(bnyThreshImg, erodeImg, 0);                       // Erode Filter Effect
 
-                std::vector<std::vector<cv::Point>> contours; // mulitdimensional dynamic array
-                std::vector<cv::Vec4i> hierarchy;
-                cv::findContours(bnyThreshImg, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+                // std::vector<std::vector<cv::Point>> contours; // mulitdimensional dynamic array
+                // std::vector<cv::Vec4i> hierarchy;
+                // cv::findContours(bnyThreshImg, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
                 // Draw the contours
                 // cv::Mat image_copy = threshImg.clone();
@@ -220,7 +205,8 @@ int32_t main(int32_t argc, char **argv)
                     // cv::imshow("blurImg", blurImg);
                     // cv::imshow("dilateImg", dilateImg);
                     // cv::imshow("erodeImg", erodeImg);
-                    cv::imshow("blueImgWithPoint", blueImgWithKeypoints);
+                    // cv::imshow("gray scale", hsv_channels[2]);
+                    cv::imshow("blueImgWithPoint", cropedImg);
                     // cv::imshow("Cropped Img", crop);
                     // test
                     cv::waitKey(1);
