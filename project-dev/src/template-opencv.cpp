@@ -130,7 +130,7 @@ int32_t main(int32_t argc, char **argv)
                 std::string output = "TS: " + std::to_string(ms) + "; GROUND STEERING: " + std::to_string(gsr.groundSteering());
 
                 sharedMemory->unlock();
-                cropedImg = img(cv::Range(240, 480), cv::Range(0, 640));
+                cropedImg = img(cv::Range(240, 370), cv::Range(0, 640));
                 cv::cvtColor(cropedImg, hsvImg, CV_BGR2HSV); // Convert Original Image to HSV Thresh Image
 
                 // TODO: Do something with the frame.
@@ -213,8 +213,8 @@ cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, in
     cv::split(inputImage, img_channels);
     cv::Mat img_gray = img_channels[0];
     cv::Mat canny_img;
-    cv::Canny(img_gray, canny_img, 50, 60);
-    cv::findContours(canny_img, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    //cv::Canny(img_gray, canny_img, 50, 60);
+    cv::findContours(img_gray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
     // get the moments
     if (contours.size() > 0)
     {
