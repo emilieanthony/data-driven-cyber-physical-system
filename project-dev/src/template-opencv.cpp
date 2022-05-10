@@ -144,10 +144,6 @@ int32_t main(int32_t argc, char **argv)
 
                 // cv::bitwise_or(blueThreshImg, yellowThreshImg, bnyThreshImg);
 
-                // width = 640
-                // height = 480 / 3
-                //  cv::Mat crop = threshImg(cv::Range(80,280),cv::Range(150,330)); // Slicing to crop the image
-
                 cv::putText(img,                        // target image
                             output,                     // text
                             cv::Point(0, img.rows / 2), // top-left position
@@ -155,22 +151,6 @@ int32_t main(int32_t argc, char **argv)
                             1.0,
                             CV_RGB(255, 255, 255), // font color
                             1);
-
-                // cv::GaussianBlur(bnyThreshImg, blurImg, cv::Size(3, 3), 0); // Blur Effect
-                // cv::dilate(bnyThreshImg, dilateImg, 0);                     // Dilate Filter Effect
-                // cv::erode(bnyThreshImg, erodeImg, 0);                       // Erode Filter Effect
-
-                // std::vector<std::vector<cv::Point>> contours; // mulitdimensional dynamic array
-                // std::vector<cv::Vec4i> hierarchy;
-                // cv::findContours(bnyThreshImg, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
-
-                // Draw the contours
-                // cv::Mat image_copy = threshImg.clone();
-                // cv::drawContours(img, contours, -1, cv::Scalar(0, 255, 0), 2));
-
-                // Example: Draw a red rectangle and display image.
-                // cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
-                // cv::putText(img, "Group15", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX ,0.5, cv::Scalar(255,255,255)); // Draw the text
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
@@ -183,17 +163,8 @@ int32_t main(int32_t argc, char **argv)
                 if (VERBOSE)
                 {
                     // cv::imshow(sharedMemory->name().c_str(), img);
-                    // cv::imshow("Original frame", cropedImg); // show windows
-                    // cv::imshow("threshImg", bnyThreshImg);
-                    // cv::imshow("blurImg", blurImg);
-                    // cv::imshow("dilateImg", dilateImg);
-                    // cv::imshow("erodeImg", erodeImg);
-                    // cv::imshow("gray scale", hsv_channels[2]);
                     cv::imshow("blueImgWithPoint", blueResultImg);
                     cv::imshow("YellowImgWithPoint", yellowResultImg);
-
-                    // cv::imshow("Cropped Img", crop);
-                    // test
                     cv::waitKey(1);
                 }
             }
@@ -207,14 +178,14 @@ cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, in
 {
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
-    // conver to gray scale
+    // convert to gray scale
     // draw blue cones' contour
     cv::Mat img_channels[3];
     cv::split(inputImage, img_channels);
     cv::Mat img_gray = img_channels[0];
     cv::Mat canny_img;
-    //cv::Canny(img_gray, canny_img, 50, 60);
-    cv::findContours(img_gray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    cv::Canny(img_gray, canny_img, 50, 60);
+    cv::findContours(canny_img, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
     // get the moments
     if (contours.size() > 0)
     {
