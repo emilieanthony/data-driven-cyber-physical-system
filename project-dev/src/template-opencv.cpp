@@ -108,10 +108,6 @@ int32_t main(int32_t argc, char **argv)
                 cv::Mat hsvImg;        // HSV Image
                 cv::Mat blueThreshImg; //  blue Thresh Image
                 cv::Mat yellowThreshImg;
-                cv::Mat bnyThreshImg;
-                cv::Mat blurImg;
-                cv::Mat dilateImg;
-                cv::Mat erodeImg;
 
                 // Wait for a notification of a new frame.
                 sharedMemory->wait();
