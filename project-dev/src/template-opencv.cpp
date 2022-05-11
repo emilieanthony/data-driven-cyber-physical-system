@@ -47,7 +47,7 @@ const int sMaxB = 255;
 // 100 will only show the nearest cone
 const int vMinB = 40;
 const int vMaxB = 255;
-cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage,cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor);
+std::vector<cv::Point2f>  drawContourWithCentroidPoint(cv::Mat inputImage,cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor);
 
 
 int32_t main(int32_t argc, char **argv)
@@ -126,7 +126,7 @@ int32_t main(int32_t argc, char **argv)
                 std::string output = "TS: " + std::to_string(ms) + "; GROUND STEERING: " + std::to_string(gsr.groundSteering());
 
                 sharedMemory->unlock();
-                cropedImg = img(cv::Range(240, 370), cv::Range(0, 640));
+                cropedImg = img(cv::Range(290, 370), cv::Range(0, 640));
                 cv::cvtColor(cropedImg, hsvImg, CV_BGR2HSV); // Convert Original Image to HSV Thresh Image
 
                 // TODO: Do something with the frame.
@@ -135,10 +135,19 @@ int32_t main(int32_t argc, char **argv)
                 cv::Scalar blue = cv::Scalar(255,0,0);
                 cv::Scalar red = cv::Scalar(0,0,255);
                 cv::Scalar green = cv::Scalar(0,255,0);
-                cv::Mat blueResultImg = drawContourWithCentroidPoint(blueThreshImg,cropedImg,75,blue,red);
-                cv::Mat yellowResultImg = drawContourWithCentroidPoint(yellowThreshImg,cropedImg,75,green,red);
+
+
+                std::vector<cv::Point2f> blueCordinates = drawContourWithCentroidPoint(blueThreshImg,cropedImg,75,blue,red);
+                std::vector<cv::Point2f> yellowCordinates = drawContourWithCentroidPoint(yellowThreshImg,cropedImg,75,green,red);
 
                 // cv::bitwise_or(blueThreshImg, yellowThreshImg, bnyThreshImg);
+
+                for(int i = 0; i < blueCordinates.size(); i++){
+
+                    if(blueCordinates[i].x > 0){
+                        std::cout << "x: " << blueCordinates[i].x << std::endl;
+                    }
+                }
 
                 cv::putText(img,                        // target image
                             output,                     // text
@@ -152,15 +161,15 @@ int32_t main(int32_t argc, char **argv)
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
 
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << std::endl;
+                    std::cout << "main: groundSteering = " << gsr.groundSteering() << "Blue x: " << blueCordinates[0].x << "yellow x:" << yellowCordinates[0].x << std::endl;
                 }
 
                 // Display image on your screen.
                 if (VERBOSE)
                 {
                     // cv::imshow(sharedMemory->name().c_str(), img);
-                    cv::imshow("blueImgWithPoint", blueResultImg);
-                    cv::imshow("YellowImgWithPoint", yellowResultImg);
+                    cv::imshow("blueImgWithPoint", cropedImg);
+                    //cv::imshow("YellowImgWithPoint", yellowResultImg);
                     cv::waitKey(1);
                 }
             }
@@ -170,7 +179,7 @@ int32_t main(int32_t argc, char **argv)
     return retCode;
 }
 
-cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor)
+std::vector<cv::Point2f> drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor)
 {
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
@@ -179,13 +188,17 @@ cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, in
     cv::Mat img_channels[3];
     cv::split(inputImage, img_channels);
     cv::Mat img_gray = img_channels[0];
-    cv::Mat canny_img;
-    cv::Canny(img_gray, canny_img, 50, 60);
-    cv::findContours(canny_img, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    // cv::Mat canny_img;
+    // cv::Canny(img_gray, canny_img, 50, 60);
+    cv::findContours(img_gray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
     // get the moments
+    std::vector<cv::Moments> mu(contours.size());
+    std::vector<cv::Point2f> mc(mu.size());
+
+
+
     if (contours.size() > 0)
     {
-        std::vector<cv::Moments> mu(contours.size());
         for (int i = 0; i < contours.size(); i++)
         {
             if (cv::contourArea(contours[i]) > contourArea)
@@ -195,7 +208,6 @@ cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, in
         }
 
         // get the centroid of figures.
-        std::vector<cv::Point2f> mc(mu.size());
         for (int i = 0; i < mu.size(); i++)
         {
             mc[i] = cv::Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
@@ -203,8 +215,9 @@ cv::Mat drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, in
         for (int i = 0; i < mu.size(); i++)
         {
             circle(outputImage, mc[i], 4, centroidColor, -1, 8, 0);
+            //std::cout << "x: " << mc[i].x << "y: " << mc[i].y << std::endl;
         }
     }
     cv::drawContours(outputImage, contours, -1, contourColor, 2);
-    return outputImage;
+    return mc;
 }
