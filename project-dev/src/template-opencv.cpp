@@ -44,11 +44,12 @@ const int sMaxB = 255;
 // V-values:
 // 40-120 works
 // 0 will take in reflctions
-// 100 will only show the nearest cone
+// 100 will only show the nearest cone 
 const int vMinB = 40;
 const int vMaxB = 255;
-std::vector<cv::Point2f>  drawContourWithCentroidPoint(cv::Mat inputImage,cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor);
-
+cv::Point2f  drawContourWithCentroidPoint(cv::Mat inputImage,cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor);
+double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,int timestamp);
+double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yellowCone,int timestamp);
 
 int32_t main(int32_t argc, char **argv)
 {
@@ -100,6 +101,13 @@ int32_t main(int32_t argc, char **argv)
             od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
 
             // Endless loop; end the program by pressing Ctrl-C.
+
+            std::ofstream myFile("test.csv");
+
+            double NrOfCorrectAngle = 0;
+            double NrOfCorrectAngleCounter = 0;
+            double frames = 0;
+
             while (od4.isRunning())
             {
                 // OpenCV data structure to hold an image.
@@ -126,7 +134,7 @@ int32_t main(int32_t argc, char **argv)
                 std::string output = "TS: " + std::to_string(ms) + "; GROUND STEERING: " + std::to_string(gsr.groundSteering());
 
                 sharedMemory->unlock();
-                cropedImg = img(cv::Range(290, 370), cv::Range(0, 640));
+                cropedImg = img(cv::Range(310, 370), cv::Range(0, 640));
                 cv::cvtColor(cropedImg, hsvImg, CV_BGR2HSV); // Convert Original Image to HSV Thresh Image
 
                 // TODO: Do something with the frame.
@@ -137,49 +145,106 @@ int32_t main(int32_t argc, char **argv)
                 cv::Scalar green = cv::Scalar(0,255,0);
 
 
-                std::vector<cv::Point2f> blueCordinates = drawContourWithCentroidPoint(blueThreshImg,cropedImg,75,blue,red);
-                std::vector<cv::Point2f> yellowCordinates = drawContourWithCentroidPoint(yellowThreshImg,cropedImg,75,green,red);
+                cv::Point2f blueCordinates = drawContourWithCentroidPoint(blueThreshImg,cropedImg,75,blue,red);
+                cv::Point2f yellowCordinates = drawContourWithCentroidPoint(yellowThreshImg,cropedImg,75,green,red);
 
-                // cv::bitwise_or(blueThreshImg, yellowThreshImg, bnyThreshImg);
+                double calculatedAngle = calculateSteeringWheelAngle(blueCordinates, yellowCordinates, ms);
+                double calculatedAngleCounter = calculateSteeringWheelAngleCounter(blueCordinates,  yellowCordinates, ms);
 
-                for(int i = 0; i < blueCordinates.size(); i++){
-
-                    if(blueCordinates[i].x > 0){
-                        std::cout << "x: " << blueCordinates[i].x << std::endl;
-                    }
+                frames++;  
+                // Is the calculated angle within 0.05 deviation
+                if(calculatedAngle < gsr.groundSteering() + 0.05 && calculatedAngle > gsr.groundSteering() - 0.05 ){
+                    NrOfCorrectAngle++;
                 }
+
+                if(calculatedAngleCounter < gsr.groundSteering() + 0.05 && calculatedAngleCounter > gsr.groundSteering() - 0.05 ){
+                    NrOfCorrectAngleCounter++;
+                }
+
+                // Calculate Percentage
+
+                std::string cordinates; 
+
+                // Write to file
+                myFile << std::to_string(ms) << ",";
+                myFile << std::to_string(gsr.groundSteering()) << ",";
+                myFile << std::to_string(calculatedAngle);
+                myFile << "\n";
+
+
+                // for(int i = 0; i < blueCordinates.size(); i++){
+
+                //     if(blueCordinates[i].x > 0){
+                //         myFile << std::to_string(blueCordinates[i].x) << ",";
+
+                //     }
+                // }
+
+                // for(int i = 0; i < yellowCordinates.size(); i++){
+
+                //     if(yellowCordinates[i].x > 0){
+                //         myFile << std::to_string(yellowCordinates[i].x) << ",";
+
+                //     }
+                // }
+                
+
+
+                output.append(" CalAng: " + std::to_string(calculatedAngle));
+                std::cout << "Calculated angle: " << std::to_string(calculatedAngle) << std::endl; 
 
                 cv::putText(img,                        // target image
                             output,                     // text
                             cv::Point(0, img.rows / 2), // top-left position
                             cv::FONT_HERSHEY_PLAIN,
                             1.0,
-                            CV_RGB(255, 255, 255), // font color
+                            CV_RGB(0, 0, 255), // font color
                             1);
+                cv::putText(img,                        // target image
+                            cordinates,                     // text
+                            cv::Point(10, 50), // top-left position
+                            cv::FONT_HERSHEY_PLAIN,
+                            1.0,
+                            CV_RGB(0, 0, 255), // font color
+                            1);
+
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
 
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << "Blue x: " << blueCordinates[0].x << "yellow x:" << yellowCordinates[0].x << std::endl;
+                    std::cout << "main: groundSteering = " << gsr.groundSteering() << std::endl;
                 }
 
                 // Display image on your screen.
                 if (VERBOSE)
                 {
-                    // cv::imshow(sharedMemory->name().c_str(), img);
+                    cv::imshow(sharedMemory->name().c_str(), img);
                     cv::imshow("blueImgWithPoint", cropedImg);
                     //cv::imshow("YellowImgWithPoint", yellowResultImg);
                     cv::waitKey(1);
                 }
             }
+            myFile.close();
+            double percentage = NrOfCorrectAngle / frames;
+            double percentageCounter = NrOfCorrectAngleCounter / frames;
+
+            std::cout << "Percentage: " << std::to_string(percentage) << std::endl;
+            std::cout << "Percentage Counter: " << std::to_string(percentageCounter) << std::endl;
+
+            std::cout << "Frames: " << std::to_string(frames) << std::endl;
+            std::cout << "Nr Correct Angle: " << std::to_string(NrOfCorrectAngle) << std::endl;
+            std::cout << "Nr Correct Angle  Counter: " << std::to_string(NrOfCorrectAngleCounter) << std::endl;
         }
         retCode = 0;
+
+
     }
+
     return retCode;
 }
 
-std::vector<cv::Point2f> drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor)
+cv::Point2f drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor)
 {
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
@@ -194,6 +259,7 @@ std::vector<cv::Point2f> drawContourWithCentroidPoint(cv::Mat inputImage, cv::Ma
     // get the moments
     std::vector<cv::Moments> mu(contours.size());
     std::vector<cv::Point2f> mc(mu.size());
+    cv::Point2f cone;
 
 
 
@@ -215,9 +281,123 @@ std::vector<cv::Point2f> drawContourWithCentroidPoint(cv::Mat inputImage, cv::Ma
         for (int i = 0; i < mu.size(); i++)
         {
             circle(outputImage, mc[i], 4, centroidColor, -1, 8, 0);
+
+            if(mc[i].x > 0 ){
+                // then we have a value
+                cone = mc[i];
+            }
             //std::cout << "x: " << mc[i].x << "y: " << mc[i].y << std::endl;
         }
     }
     cv::drawContours(outputImage, contours, -1, contourColor, 2);
-    return mc;
+    return cone;
 }
+
+
+
+// Method to calculate the steering wheel angle. Works for clockwise (blue cones on the left) about 50% correct. 
+// When running this counter clockwise we get about 20 % 
+double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,int timestamp){
+    // car position 0 480/2 240
+
+    int carPosition = 240;
+    int middleLeft = 120;
+    int middleRight = 360;
+
+    double angle = 0.0;
+
+    // 120 240 360 480 
+
+    // Right is negative
+    // left is positive
+
+    if(yellowCone.x > middleRight && blueCone.x < middleLeft){
+        // ---------------------------
+        // |  X   |      |      |  X  |
+        // ---------------------------
+        // Dont turn
+        angle = 0.0;
+
+    } else if (blueCone.x < carPosition && blueCone.x > middleLeft){
+        // ---------------------------
+        // |     |   x   |      |     |
+        // ---------------------------   
+        // Turn Right negative value
+        angle = -0.1;
+
+    } else if (blueCone.x > carPosition && blueCone.x > middleRight) {
+        // ---------------------------
+        // |     |     |   x  |     |
+        // ---------------------------   
+        // Turn sharp Right negative value
+        angle = -0.2;
+    } else if (yellowCone.x < middleLeft && yellowCone.x > carPosition) {
+        // ---------------------------
+        // |     |     |   x  |     |
+        // ---------------------------   
+        // Turn Left
+        angle = 0.1;
+    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft) {
+        // ---------------------------
+        // |     |  x   |     |     |
+        // ---------------------------   
+        // Turn sharp Left negative value
+        angle = 0.2;
+    }
+
+    return angle;
+}
+
+// Method to calculate the steering wheel angle. Works for counter clockwise (yellow cones on the left) about 50% correct. 
+// When running this counter clockwise we get about 20 % 
+double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yellowCone,int timestamp){
+    // car position 0 480/2 240
+
+    int carPosition = 240;
+    int middleLeft = 120;
+    int middleRight = 360;
+
+    double angle = 0.0;
+
+    // 120 240 360 480 
+
+    // Right is negative
+    // left is positive
+
+    if(blueCone.x > middleRight && yellowCone.x < middleLeft){
+        // ---------------------------
+        // |  X   |      |      |  X  |
+        // ---------------------------
+        // Dont turn
+        angle = 0.0;
+
+    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft){
+        // ---------------------------
+        // |     |   x   |      |     |
+        // ---------------------------   
+        // Turn Right negative value
+        angle = -0.1;
+
+    } else if (yellowCone.x > carPosition && yellowCone.x > middleRight) {
+        // ---------------------------
+        // |     |     |   x  |     |
+        // ---------------------------   
+        // Turn sharp Right negative value
+        angle = -0.2;
+    } else if (blueCone.x < middleLeft && blueCone.x > carPosition) {
+        // ---------------------------
+        // |     |     |   x  |     |
+        // ---------------------------   
+        // Turn Left
+        angle = 0.1;
+    } else if (blueCone.x < carPosition && blueCone.x > middleLeft) {
+        // ---------------------------
+        // |     |  x   |     |     |
+        // ---------------------------   
+        // Turn sharp Left negative value
+        angle = 0.2;
+    }
+
+    return angle;
+}
+
