@@ -35,7 +35,7 @@ RUN apt-get install -y --no-install-recommends \
     libopencv-dev
 
 # Include this source tree and compile the sources
-ADD . /opt/sources
+ADD /project-dev/src /opt/sources
 WORKDIR /opt/sources
 RUN mkdir build && \
     cd build && \
