@@ -1,3 +1,5 @@
 /project-dev/example\ project/build
 /project-dev/src/build
 .DS_Store
+/project-dev/src/cluon*
+/project-dev/src/opendlv*
