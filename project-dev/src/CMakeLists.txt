@@ -106,10 +106,10 @@ add_custom_target(generate_opendlv_standard_message_set_hpp DEPENDS ${CMAKE_CURR
 add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 
 # Testing
-enable_testing() 
+# enable_testing() 
 
-add_executable(${PROJECT_NAME}-Runner src/TestTemplate-opencv.cpp)
-add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
+# add_executable(${PROJECT_NAME}-Runner src/TestTemplate-opencv.cpp)
+# add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
 
 ################################################################################
 # Install executable.
