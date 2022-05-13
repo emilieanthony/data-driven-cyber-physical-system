@@ -30,6 +30,9 @@ set(CLUON_COMPLETE cluon-complete-v0.0.127.hpp)
 # Set the search path for .cmake files.
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
+
 ################################################################################
 # This project requires C++14 or newer.
 set(CMAKE_CXX_STANDARD 14)
@@ -101,6 +104,12 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 # Add dependency to OpenDLV Standard Message Set.
 add_custom_target(generate_opendlv_standard_message_set_hpp DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opendlv-standard-message-set.hpp)
 add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
+
+# Testing
+enable_testing() 
+
+add_executable(${PROJECT_NAME}-Runner src/TestTemplate-opencv.cpp)
+add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
 
 ################################################################################
 # Install executable.
