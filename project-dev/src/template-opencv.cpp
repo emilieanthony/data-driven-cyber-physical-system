@@ -102,7 +102,14 @@ int32_t main(int32_t argc, char **argv)
 
             // Endless loop; end the program by pressing Ctrl-C.
 
-            std::ofstream myFile("test.csv");
+            std::ofstream myFile("../test.csv");
+
+             myFile << "Timestamp " << ",";
+                myFile << "GroundSteeringRequest " << ",";
+                // myFile << "Bluecone x " << ",";
+                // myFile << "YellowCone x " << ",";
+                myFile << "Calculated Angle";
+                myFile << "\n";
 
             double NrOfCorrectAngle = 0;
             double NrOfCorrectAngleCounter = 0;
@@ -200,14 +207,12 @@ int32_t main(int32_t argc, char **argv)
                 // Write to file
                 myFile << std::to_string(ms) << ",";
                 myFile << std::to_string(gsr.groundSteering()) << ",";
+                // myFile << std::to_string(blueCone.x) << ",";
+                // myFile << std::to_string(yellowCone.x) << ",";
                 myFile << std::to_string(calculatedAngle);
                 myFile << "\n";
                 
-
-
                 output.append(" CalAng: " + std::to_string(calculatedAngle));
-                std::cout << "Calculated angle: " << std::to_string(calculatedAngle) << std::endl; 
-
                 cv::putText(img,                        // target image
                             output,                     // text
                             cv::Point(0, img.rows / 2), // top-left position
@@ -223,19 +228,18 @@ int32_t main(int32_t argc, char **argv)
                             CV_RGB(0, 0, 255), // font color
                             1);
 
-
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
 
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << std::endl;
+                    std::cout << "Group 15; " << std::to_string(ms) << "; " << std::to_string(calculatedAngle) << std::endl;
                 }
 
                 // Display image on your screen.
                 if (VERBOSE)
                 {
                     cv::imshow(sharedMemory->name().c_str(), img);
-                    cv::imshow("blueImgWithPoint", cropedImg);
+                    cv::imshow("Cropped Image", cropedImg);
                     //cv::imshow("YellowImgWithPoint", yellowResultImg);
                     cv::waitKey(1);
                 }
@@ -342,7 +346,7 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
-    } else if (yellowCone.x < middleLeft && yellowCone.x > carPosition) {
+    } else if (yellowCone.x < middleRight && yellowCone.x > carPosition) {
         // ---------------------------
         // |     |     |   x  |     |
         // ---------------------------   
@@ -375,14 +379,7 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
     // Right is negative
     // left is positive
 
-    if(blueCone.x > middleRight && yellowCone.x < middleLeft){
-        // ---------------------------
-        // |  X   |      |      |  X  |
-        // ---------------------------
-        // Dont turn
-        angle = 0.0;
-
-    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft){
+    if (yellowCone.x < carPosition && yellowCone.x > middleLeft){
         // ---------------------------
         // |     |   x   |      |     |
         // ---------------------------   
@@ -395,7 +392,7 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
-    } else if (blueCone.x < middleLeft && blueCone.x > carPosition) {
+    } else if (blueCone.x < middleRight && blueCone.x > carPosition) {
         // ---------------------------
         // |     |     |   x  |     |
         // ---------------------------   
@@ -407,7 +404,14 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
         // ---------------------------   
         // Turn sharp Left negative value
         angle = 0.2;
-    }
+    } else if(blueCone.x > middleRight && yellowCone.x < middleLeft){
+        // ---------------------------
+        // |  X   |      |      |  X  |
+        // ---------------------------
+        // Dont turn
+        angle = 0.0;
+        
+        }
 
     return angle;
 }
