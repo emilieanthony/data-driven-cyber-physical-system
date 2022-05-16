@@ -145,7 +145,7 @@ int32_t main(int32_t argc, char **argv)
                 std::string output = "TS: " + std::to_string(ms) + "; GROUND STEERING: " + std::to_string(gsr.groundSteering());
 
                 sharedMemory->unlock();
-                cropedImg = img(cv::Range(310, 370), cv::Range(0, 640));
+                cropedImg = img(cv::Range(310, 360), cv::Range(0, 640));
                 cv::cvtColor(cropedImg, hsvImg, CV_BGR2HSV); // Convert Original Image to HSV Thresh Image
 
                 // TODO: Do something with the frame.
