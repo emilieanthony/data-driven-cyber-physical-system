@@ -289,7 +289,7 @@ cv::Point2f drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage
             //std::cout << "x: " << mc[i].x << "y: " << mc[i].y << std::endl;
         }
     }
-    cv::drawContours(outputImage, contours, -1, contourColor, 2);
+    // cv::drawContours(outputImage, contours, -1, contourColor, 2);
     return cone;
 }
 
@@ -311,38 +311,51 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
     // Right is negative
     // left is positive
 
-    if(yellowCone.x > middleRight && blueCone.x < middleLeft){
+    if(blueCone.x < middleLeft || yellowCone.x > middleRight){
         // ---------------------------
-        // |  X   |      |      |  X  |
+        // |  B   |      |      |  Y  |
         // ---------------------------
         // Dont turn
         angle = 0.0;
 
     } else if (blueCone.x < carPosition && blueCone.x > middleLeft){
         // ---------------------------
-        // |     |   x   |      |     |
+        // |     |   B   |      |     |
         // ---------------------------   
         // Turn Right negative value
         angle = -0.1;
 
     } else if (blueCone.x > carPosition && blueCone.x < middleRight) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |   B  |     |
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
-    } else if (yellowCone.x < middleLeft && yellowCone.x > carPosition) {
+
+    } else if (blueCone.x < 480 && blueCone.x > middleRight) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |     |  B   |
+        // ---------------------------   
+        // Turn super sharp Right negative value
+        angle = -0.25;
+    } else if (yellowCone.x < middleRight && yellowCone.x > carPosition) {
+        // ---------------------------
+        // |     |     |   Y  |     |
         // ---------------------------   
         // Turn Left
         angle = 0.1;
     } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft) {
         // ---------------------------
-        // |     |  x   |     |     |
+        // |     |  Y   |     |     |
         // ---------------------------   
-        // Turn sharp Left negative value
+        // Turn sharp Left postive value
         angle = 0.2;
+    } else if (yellowCone.x > 5 && yellowCone.x < middleLeft) {
+        // ---------------------------
+        // | Y   |     |     |     |
+        // ---------------------------   
+        // Turn supersharp left positive value
+        angle = 0.25;
     }
 
     return angle;
@@ -364,38 +377,50 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
     // Right is negative
     // left is positive
 
-    if(blueCone.x > middleRight && yellowCone.x < middleLeft){
+    if(yellowCone.x < middleLeft || blueCone.x > middleRight){
         // ---------------------------
-        // |  X   |      |      |  X  |
+        // |  Y   |      |      |  B  |
         // ---------------------------
         // Dont turn
         angle = 0.0;
 
     } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft){
         // ---------------------------
-        // |     |   x   |      |     |
+        // |     |   Y   |      |     |
         // ---------------------------   
         // Turn Right negative value
         angle = -0.1;
 
     } else if (yellowCone.x > carPosition && yellowCone.x < middleRight) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |  Y |     |
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
+    }else if ( yellowCone.x > middleRight && yellowCone.x < 480) {
+        // ---------------------------
+        // |     |     |     |   Y  |
+        // ---------------------------   
+        // Turn supersharp Right negative value
+        angle = -0.25;
     } else if (blueCone.x < middleLeft && blueCone.x > carPosition) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |   B  |     |
         // ---------------------------   
         // Turn Left
         angle = 0.1;
     } else if (blueCone.x < carPosition && blueCone.x > middleLeft) {
         // ---------------------------
-        // |     |  x   |     |     |
+        // |     |  B  |     |     |
         // ---------------------------   
-        // Turn sharp Left negative value
+        // Turn sharp Left value
         angle = 0.2;
+    } else if (blueCone.x < middleLeft && blueCone.x > 5) {
+        // ---------------------------
+        // |  B   |     |     |     |
+        // ---------------------------   
+        // Turn supersharp Left value
+        angle = 0.25;
     }
 
     return angle;
