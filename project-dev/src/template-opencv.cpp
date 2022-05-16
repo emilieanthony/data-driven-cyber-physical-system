@@ -377,47 +377,47 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
     // Right is negative
     // left is positive
 
-    if(blueCone.x > middleRight && yellowCone.x < middleLeft){
+    if(yellowCone.x < middleLeft && blueCone.x > middleRight){
         // ---------------------------
-        // |  X   |      |      |  X  |
+        // |  Y   |      |      |  B  |
         // ---------------------------
         // Dont turn
         angle = 0.0;
 
     } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft){
         // ---------------------------
-        // |     |   x   |      |     |
+        // |     |   Y   |      |     |
         // ---------------------------   
         // Turn Right negative value
         angle = -0.1;
 
     } else if (yellowCone.x > carPosition && yellowCone.x < middleRight) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |  Y |     |
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
     }else if (yellowCone.x > carPosition && yellowCone.x > middleRight) {
         // ---------------------------
-        // |     |     |     |   x  |
+        // |     |     |     |   Y  |
         // ---------------------------   
         // Turn supersharp Right negative value
         angle = -0.25;
     } else if (blueCone.x < middleLeft && blueCone.x > carPosition) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |   B  |     |
         // ---------------------------   
         // Turn Left
         angle = 0.1;
     } else if (blueCone.x < carPosition && blueCone.x > middleLeft) {
         // ---------------------------
-        // |     |  x   |     |     |
+        // |     |  B  |     |     |
         // ---------------------------   
         // Turn sharp Left value
         angle = 0.2;
     } else if (blueCone.x < carPosition && blueCone.x < middleLeft) {
         // ---------------------------
-        // |  x   |     |     |     |
+        // |  B   |     |     |     |
         // ---------------------------   
         // Turn supersharp Left value
         angle = 0.25;
