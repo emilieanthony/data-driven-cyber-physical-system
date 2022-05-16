@@ -107,6 +107,10 @@ int32_t main(int32_t argc, char **argv)
             double NrOfCorrectAngle = 0;
             double NrOfCorrectAngleCounter = 0;
             double frames = 0;
+            double calculatedAngle;
+            cv::Point2f previousBluecone;
+            cv::Point2f previousYellowCone;
+            double previousCalculatedAngle;
 
             while (od4.isRunning())
             {
@@ -145,20 +149,48 @@ int32_t main(int32_t argc, char **argv)
                 cv::Scalar green = cv::Scalar(0,255,0);
 
 
-                cv::Point2f blueCordinates = drawContourWithCentroidPoint(blueThreshImg,cropedImg,75,blue,red);
-                cv::Point2f yellowCordinates = drawContourWithCentroidPoint(yellowThreshImg,cropedImg,75,green,red);
+                cv::Point2f blueCone = drawContourWithCentroidPoint(blueThreshImg,cropedImg,75,blue,red);
+                cv::Point2f yellowCone = drawContourWithCentroidPoint(yellowThreshImg,cropedImg,75,green,red);
 
-                double calculatedAngle = calculateSteeringWheelAngle(blueCordinates, yellowCordinates, ms);
-                double calculatedAngleCounter = calculateSteeringWheelAngleCounter(blueCordinates,  yellowCordinates, ms);
 
+                if(previousBluecone.x > 0){
+                    if(previousBluecone.x > blueCone.x){
+                        // moving to the left counter clockwise
+                        std::cout << "clock" << std::endl;
+                        calculatedAngle = calculateSteeringWheelAngle(blueCone, yellowCone, ms);
+                    } else {
+                        // moving to the right clockwise
+                        std::cout << "counter" << std::endl;
+                        calculatedAngle = calculateSteeringWheelAngleCounter(blueCone,  yellowCone, ms);
+
+                    }
+                } 
+                else if(previousYellowCone.x > 0){
+                    if(previousYellowCone.x > yellowCone.x){
+                         // moving to the left clockwise
+                        std::cout << "counter" << std::endl;
+                        calculatedAngle = calculateSteeringWheelAngleCounter(blueCone,  yellowCone, ms);
+
+                    } else {
+                        // moving to the right counter clockwise
+                        std::cout << "clock" << std::endl;
+                        calculatedAngle = calculateSteeringWheelAngle(blueCone, yellowCone, ms);
+
+                     }
+                } else {
+                    // if we don't know the direction we just assume the steering wheel angle to be 0.
+                    std::cout << "don't know" << std::endl;
+                    calculatedAngle = previousCalculatedAngle;
+                }
+                
+                previousBluecone = blueCone;
+                previousYellowCone = yellowCone;
+                previousCalculatedAngle = calculatedAngle;
                 frames++;  
+
                 // Is the calculated angle within 0.05 deviation
                 if(calculatedAngle < gsr.groundSteering() + 0.05 && calculatedAngle > gsr.groundSteering() - 0.05 ){
                     NrOfCorrectAngle++;
-                }
-
-                if(calculatedAngleCounter < gsr.groundSteering() + 0.05 && calculatedAngleCounter > gsr.groundSteering() - 0.05 ){
-                    NrOfCorrectAngleCounter++;
                 }
 
                 // Calculate Percentage
@@ -170,23 +202,6 @@ int32_t main(int32_t argc, char **argv)
                 myFile << std::to_string(gsr.groundSteering()) << ",";
                 myFile << std::to_string(calculatedAngle);
                 myFile << "\n";
-
-
-                // for(int i = 0; i < blueCordinates.size(); i++){
-
-                //     if(blueCordinates[i].x > 0){
-                //         myFile << std::to_string(blueCordinates[i].x) << ",";
-
-                //     }
-                // }
-
-                // for(int i = 0; i < yellowCordinates.size(); i++){
-
-                //     if(yellowCordinates[i].x > 0){
-                //         myFile << std::to_string(yellowCordinates[i].x) << ",";
-
-                //     }
-                // }
                 
 
 
@@ -227,14 +242,11 @@ int32_t main(int32_t argc, char **argv)
             }
             myFile.close();
             double percentage = NrOfCorrectAngle / frames;
-            double percentageCounter = NrOfCorrectAngleCounter / frames;
 
             std::cout << "Percentage: " << std::to_string(percentage) << std::endl;
-            std::cout << "Percentage Counter: " << std::to_string(percentageCounter) << std::endl;
 
             std::cout << "Frames: " << std::to_string(frames) << std::endl;
             std::cout << "Nr Correct Angle: " << std::to_string(NrOfCorrectAngle) << std::endl;
-            std::cout << "Nr Correct Angle  Counter: " << std::to_string(NrOfCorrectAngleCounter) << std::endl;
         }
         retCode = 0;
 
@@ -289,7 +301,7 @@ cv::Point2f drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage
             //std::cout << "x: " << mc[i].x << "y: " << mc[i].y << std::endl;
         }
     }
-    cv::drawContours(outputImage, contours, -1, contourColor, 2);
+    // cv::drawContours(outputImage, contours, -1, contourColor, 2);
     return cone;
 }
 
@@ -303,7 +315,6 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
     int carPosition = 240;
     int middleLeft = 120;
     int middleRight = 360;
-
     double angle = 0.0;
 
     // 120 240 360 480 
@@ -343,7 +354,7 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
         // ---------------------------   
         // Turn sharp Left negative value
         angle = 0.2;
-    }
+    } 
 
     return angle;
 }
