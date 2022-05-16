@@ -311,51 +311,51 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
     // Right is negative
     // left is positive
 
-    if(yellowCone.x > middleRight && blueCone.x < middleLeft){
+    if(blueCone.x < middleLeft && yellowCone.x > middleRight){
         // ---------------------------
-        // |  X   |      |      |  X  |
+        // |  B   |      |      |  Y  |
         // ---------------------------
         // Dont turn
         angle = 0.0;
 
     } else if (blueCone.x < carPosition && blueCone.x > middleLeft){
         // ---------------------------
-        // |     |   x   |      |     |
+        // |     |   B   |      |     |
         // ---------------------------   
         // Turn Right negative value
         angle = -0.1;
 
     } else if (blueCone.x > carPosition && blueCone.x < middleRight) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |   B  |     |
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
 
     } else if (blueCone.x > carPosition && blueCone.x > middleRight) {
         // ---------------------------
-        // |     |     |     |  x   |
+        // |     |     |     |  B   |
         // ---------------------------   
         // Turn super sharp Right negative value
         angle = -0.25;
     } else if (yellowCone.x < middleLeft && yellowCone.x > carPosition) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // |     |     |   Y  |     |
         // ---------------------------   
         // Turn Left
         angle = 0.1;
     } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft) {
         // ---------------------------
-        // |     |  x   |     |     |
+        // |     |  Y   |     |     |
         // ---------------------------   
-        // Turn sharp Left negative value
+        // Turn sharp Left postive value
         angle = 0.2;
-    } else if (blueCone.x > carPosition && blueCone.x > middleRight) {
+    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft) {
         // ---------------------------
-        // |     |     |   x  |     |
+        // | Y   |     |     |     |
         // ---------------------------   
-        // Turn supersharp left negative value
-        angle = -0.25;
+        // Turn supersharp left positive value
+        angle = 0.25;
     }
 
     return angle;
