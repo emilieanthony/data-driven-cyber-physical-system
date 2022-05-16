@@ -155,11 +155,11 @@ int32_t main(int32_t argc, char **argv)
 
                 if(previousBluecone.x > 0){
                     if(previousBluecone.x > blueCone.x){
-                        // moving to the left counter clockwise
+                        // moving to the right counter clockwise
                         std::cout << "clock" << std::endl;
                         calculatedAngle = calculateSteeringWheelAngle(blueCone, yellowCone, ms);
                     } else {
-                        // moving to the right clockwise
+                        // moving to the left clockwise
                         std::cout << "counter" << std::endl;
                         calculatedAngle = calculateSteeringWheelAngleCounter(blueCone,  yellowCone, ms);
 
@@ -167,12 +167,12 @@ int32_t main(int32_t argc, char **argv)
                 } 
                 else if(previousYellowCone.x > 0){
                     if(previousYellowCone.x > yellowCone.x){
-                         // moving to the left clockwise
+                         // moving to the right clockwise
                         std::cout << "counter" << std::endl;
                         calculatedAngle = calculateSteeringWheelAngleCounter(blueCone,  yellowCone, ms);
 
                     } else {
-                        // moving to the right counter clockwise
+                        // moving to the left counter clockwise
                         std::cout << "clock" << std::endl;
                         calculatedAngle = calculateSteeringWheelAngle(blueCone, yellowCone, ms);
 
