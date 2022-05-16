@@ -350,7 +350,7 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
         // ---------------------------   
         // Turn sharp Left postive value
         angle = 0.2;
-    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft) {
+    } else if (yellowCone.x < carPosition && yellowCone.x < middleLeft) {
         // ---------------------------
         // | Y   |     |     |     |
         // ---------------------------   
