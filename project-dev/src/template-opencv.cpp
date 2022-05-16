@@ -325,7 +325,7 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
         // Turn Right negative value
         angle = -0.1;
 
-    } else if (blueCone.x > carPosition && blueCone.x > middleRight) {
+    } else if (blueCone.x > carPosition && blueCone.x < middleRight) {
         // ---------------------------
         // |     |     |   x  |     |
         // ---------------------------   
@@ -378,7 +378,7 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
         // Turn Right negative value
         angle = -0.1;
 
-    } else if (yellowCone.x > carPosition && yellowCone.x > middleRight) {
+    } else if (yellowCone.x > carPosition && yellowCone.x < middleRight) {
         // ---------------------------
         // |     |     |   x  |     |
         // ---------------------------   
