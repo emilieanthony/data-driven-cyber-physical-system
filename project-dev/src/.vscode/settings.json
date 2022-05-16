@@ -57,6 +57,11 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "bit": "cpp",
+        "complex": "cpp",
+        "list": "cpp",
+        "shared_mutex": "cpp",
+        "unordered_set": "cpp"
     }
 }

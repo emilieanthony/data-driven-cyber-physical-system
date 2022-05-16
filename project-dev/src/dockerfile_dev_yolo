@@ -30,6 +30,8 @@ RUN cd opencv && mkdir build && cd build &&\
 # Include this source tree and compile the sources
 # ADD . /opt/sources
 WORKDIR /opt/sources
+RUN apt-get install -y pip
+RUN pip install opencv-python
 
 # RUN mkdir build && \
 #     cd build && \

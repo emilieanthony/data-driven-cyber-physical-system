@@ -19,37 +19,152 @@
 #include "cluon-complete.hpp"
 // Include the OpenDLV Standard Message Set that contains messages that are usually exchanged for automotive or robotic applications
 #include "opendlv-standard-message-set.hpp"
+#include <fstream>
 
 // Include the GUI and image processing header files from OpenCV
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d.hpp>
+// #include <opencv2/highgui/highgui.hpp>
+// #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
-// Yellow hsv values
-const int hMinY = 15;
-const int hMaxY = 25;
-const int sMinY = 75;
-const int sMaxY = 185;
-const int vMinY = 147;
-const int vMaxY = 255;
+const float INPUT_WIDTH = 640.0;
+const float INPUT_HEIGHT = 640.0;
+const float SCORE_THRESHOLD = 0.5;
+const float NMS_THRESHOLD = 0.45;
+const float CONFIDENCE_THRESHOLD = 0.45;
 
-// Blue hsv values
-const int hMinB = 100;
-const int hMaxB = 140;
-// S-values:
-// minValue: 75 is too low because it will show the things with high reflections
-// 150 will only show the clostest ones
-const int sMinB = 120;
-const int sMaxB = 255;
-// V-values:
-// 40-120 works
-// 0 will take in reflctions
-// 100 will only show the nearest cone
-const int vMinB = 40;
-const int vMaxB = 255;
-cv::Point2f drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor);
-double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone, int timestamp);
-double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yellowCone, int timestamp);
+// Text parameters.
+const float FONT_SCALE = 0.7;
+const int FONT_FACE = FONT_HERSHEY_SIMPLEX;
+const int THICKNESS = 1;
+
+// Colors.
+cv::Scalar BLACK = Scalar(0, 0, 0);
+cv::Scalar BLUE = Scalar(255, 178, 50);
+cv::Scalar YELLOW = Scalar(0, 255, 255);
+cv::Scalar RED = Scalar(0, 0, 255);
+std::vector<std::string> load_class_list()
+{
+    std::vector<std::string> class_list;
+    std::ifstream ifs("config_files/classes.txt");
+    std::string line;
+    while (getline(ifs, line))
+    {
+        class_list.push_back(line);
+    }
+    return class_list;
+}
+
+// Draw the predicted bounding box.
+void draw_label(cv::Mat &input_image, std::string label, int left, int top)
+{
+    // Display the label at the top of the bounding box.
+    int baseLine;
+    Size label_size = getTextSize(label, FONT_FACE, FONT_SCALE, THICKNESS, &baseLine);
+    top = max(top, label_size.height);
+    // Top left corner.
+    Point tlc = Point(left, top);
+    // Bottom right corner.
+    Point brc = Point(left + label_size.width, top + label_size.height + baseLine);
+    // Draw black rectangle.
+    rectangle(input_image, tlc, brc, BLACK, FILLED);
+    // Put the label on the black rectangle.
+    putText(input_image, label, Point(left, top + label_size.height), FONT_FACE, FONT_SCALE, YELLOW, THICKNESS);
+}
+
+std::vector<cv::Mat> pre_process(cv::Mat &input_image, cv::dnn::Net &net)
+{
+    // Convert to blob.
+    cv::Mat blob;
+    blobFromImage(input_image, blob, 1. / 255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
+
+    net.setInput(blob);
+
+    // Forward propagate.
+    vector<Mat> outputs;
+    net.forward(outputs, net.getUnconnectedOutLayersNames());
+
+    return outputs;
+}
+
+cv::Mat post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name)
+{
+    // Initialize vectors to hold respective outputs while unwrapping detections.
+    vector<int> class_ids;
+    vector<float> confidences;
+    vector<Rect> boxes;
+
+    // Resizing factor.
+    float x_factor = input_image.cols / INPUT_WIDTH;
+    float y_factor = input_image.rows / INPUT_HEIGHT;
+
+    float *data = (float *)outputs[0].data;
+
+    const int dimensions = 85;
+    const int rows = 25200;
+    // Iterate through 25200 detections.
+    for (int i = 0; i < rows; ++i)
+    {
+        float confidence = data[4];
+        // Discard bad detections and continue.
+        if (confidence >= CONFIDENCE_THRESHOLD)
+        {
+            float *classes_scores = data + 5;
+            // Create a 1x85 Mat and store class scores of 80 classes.
+            Mat scores(1, class_name.size(), CV_32FC1, classes_scores);
+            // Perform minMaxLoc and acquire index of best class score.
+            Point class_id;
+            double max_class_score;
+            minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
+            // Continue if the class score is above the threshold.
+            if (max_class_score > SCORE_THRESHOLD)
+            {
+                // Store class ID and confidence in the pre-defined respective vectors.
+
+                confidences.push_back(confidence);
+                class_ids.push_back(class_id.x);
+
+                // Center.
+                float cx = data[0];
+                float cy = data[1];
+                // Box dimension.
+                float w = data[2];
+                float h = data[3];
+                // Bounding box coordinates.
+                int left = int((cx - 0.5 * w) * x_factor);
+                int top = int((cy - 0.5 * h) * y_factor);
+                int width = int(w * x_factor);
+                int height = int(h * y_factor);
+                // Store good detections in the boxes vector.
+                boxes.push_back(Rect(left, top, width, height));
+            }
+        }
+        // Jump to the next column.
+        data += 85;
+    }
+
+    // Perform Non Maximum Suppression and draw predictions.
+    vector<int> indices;
+    cv::dnn::NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
+    for (int i = 0; i < indices.size(); i++)
+    {
+        int idx = indices[i];
+        Rect box = boxes[idx];
+
+        int left = box.x;
+        int top = box.y;
+        int width = box.width;
+        int height = box.height;
+        // Draw bounding box.
+        rectangle(input_image, std::Point(left, top), std::Point(left + width, top + height), BLUE, 3 * THICKNESS);
+
+        // Get the label for the class name and its confidence.
+        string label = format("%.2f", confidences[idx]);
+        label = class_name[class_ids[idx]] + ":" + label;
+        // Draw class labels.
+        draw_label(input_image, label, left, top);
+    }
+    return input_image;
+}
 
 int32_t main(int32_t argc, char **argv)
 {
@@ -67,7 +182,9 @@ int32_t main(int32_t argc, char **argv)
         std::cerr << "         --name:   name of the shared memory area to attach" << std::endl;
         std::cerr << "         --width:  width of the frame" << std::endl;
         std::cerr << "         --height: height of the frame" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=253 --name=img --width=640 --height=480 --verbose" << std::endl;
+        std::cerr << "         -cuda: to use cuda" << std::endl;
+
+        std::cerr << "Example: " << argv[0] << " --cid=253 --name=img --width=640 --height=480 --verbose -cuda" << std::endl;
     }
     else
     {
@@ -76,6 +193,20 @@ int32_t main(int32_t argc, char **argv)
         const uint32_t WIDTH{static_cast<uint32_t>(std::stoi(commandlineArguments["width"]))};
         const uint32_t HEIGHT{static_cast<uint32_t>(std::stoi(commandlineArguments["height"]))};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
+        const bool CUDA{commandlineArguments["cuda"] == "1"};
+        // get object's name
+        std::vector<std::string> class_list = load_class_list();
+
+        bool is_cuda = CUDA;
+        std::clog << argv[0] << ": cuda value is: " << is_cuda << " ." << std::endl;
+
+        cv::dnn::Net net;
+        load_net(net, is_cuda);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        int frame_count = 0;
+        float fps = -1;
+        int total_frames = 0;
 
         // Attach to the shared memory.
         std::unique_ptr<cluon::SharedMemory> sharedMemory{new cluon::SharedMemory{NAME}};
@@ -123,7 +254,7 @@ int32_t main(int32_t argc, char **argv)
                 sharedMemory->lock();
                 {
                     // Copy the pixels from the shared memory into our own data structure.
-                    cv::Mat wrapped(HEIGHT, WIDTH, CV_8UC4, sharedMemory->data());
+                    cv::Mat wrapped(HEIGHT, WIDTH, CV_8UC3, sharedMemory->data());
                     img = wrapped.clone();
                 }
                 // TODO: Here, you can add some code to check the sampleTimePoint when the current frame was captured.
@@ -133,77 +264,37 @@ int32_t main(int32_t argc, char **argv)
                 std::string output = "TS: " + std::to_string(ms) + "; GROUND STEERING: " + std::to_string(gsr.groundSteering());
 
                 sharedMemory->unlock();
-                cropedImg = img(cv::Range(310, 370), cv::Range(0, 640));
-                cv::cvtColor(cropedImg, hsvImg, cv::COLOR_BGR2HSV); // Convert Original Image to HSV Thresh Image
+                cropedImg = img(cv::Range(240, 480), cv::Range(0, 640));
 
-                // TODO: Do something with the frame.
-                cv::inRange(hsvImg, cv::Scalar(hMinB, sMinB, vMinB), cv::Scalar(hMaxB, sMaxB, vMaxB), blueThreshImg);
-                cv::inRange(hsvImg, cv::Scalar(hMinY, sMinY, vMinY), cv::Scalar(hMaxY, sMaxY, vMaxY), yellowThreshImg);
-                cv::Scalar blue = cv::Scalar(255, 0, 0);
-                cv::Scalar red = cv::Scalar(0, 0, 255);
-                cv::Scalar green = cv::Scalar(0, 255, 0);
+                // Load model.
+                cv::dnn::Net net;
+                net = cv::dnn::readNet("models/conedetector-opt12.onnx");
 
-                cv::Point2f blueCordinates = drawContourWithCentroidPoint(blueThreshImg, cropedImg, 75, blue, red);
-                cv::Point2f yellowCordinates = drawContourWithCentroidPoint(yellowThreshImg, cropedImg, 75, green, red);
+                std::vector<cv::Mat> detections;
+                detections = pre_process(cropedImg, net);
 
-                double calculatedAngle = calculateSteeringWheelAngle(blueCordinates, yellowCordinates, ms);
-                double calculatedAngleCounter = calculateSteeringWheelAngleCounter(blueCordinates, yellowCordinates, ms);
+                cropedImg = post_process(cropedImg, detections, class_list);
 
-                frames++;
-                // Is the calculated angle within 0.05 deviation
-                if (calculatedAngle < gsr.groundSteering() + 0.05 && calculatedAngle > gsr.groundSteering() - 0.05)
+                if (frame_count >= 30)
                 {
-                    NrOfCorrectAngle++;
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    fps = frame_count * 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+                    frame_count = 0;
+                    start = std::chrono::high_resolution_clock::now();
                 }
 
-                if (calculatedAngleCounter < gsr.groundSteering() + 0.05 && calculatedAngleCounter > gsr.groundSteering() - 0.05)
+                if (fps > 0)
                 {
-                    NrOfCorrectAngleCounter++;
+
+                    std::ostringstream fps_label;
+                    fps_label << std::fixed << std::setprecision(2);
+                    fps_label << "FPS: " << fps;
+                    std::string fps_label_str = fps_label.str();
+
+                    cv::putText(cropedImg, fps_label_str.c_str(), cv::Point(10, 260), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
                 }
-
-                // Calculate Percentage
-
-                std::string cordinates;
-
-                // Write to file
-                myFile << std::to_string(ms) << ",";
-                myFile << std::to_string(gsr.groundSteering()) << ",";
-                myFile << std::to_string(calculatedAngle);
-                myFile << "\n";
-
-                // for(int i = 0; i < blueCordinates.size(); i++){
-
-                //     if(blueCordinates[i].x > 0){
-                //         myFile << std::to_string(blueCordinates[i].x) << ",";
-
-                //     }
-                // }
-
-                // for(int i = 0; i < yellowCordinates.size(); i++){
-
-                //     if(yellowCordinates[i].x > 0){
-                //         myFile << std::to_string(yellowCordinates[i].x) << ",";
-
-                //     }
-                // }
-
-                output.append(" CalAng: " + std::to_string(calculatedAngle));
-                std::cout << "Calculated angle: " << std::to_string(calculatedAngle) << std::endl;
-
-                cv::putText(img,                        // target image
-                            output,                     // text
-                            cv::Point(0, img.rows / 2), // top-left position
-                            cv::FONT_HERSHEY_PLAIN,
-                            1.0,
-                            CV_RGB(0, 0, 255), // font color
-                            1);
-                cv::putText(img,               // target image
-                            cordinates,        // text
-                            cv::Point(10, 50), // top-left position
-                            cv::FONT_HERSHEY_PLAIN,
-                            1.0,
-                            CV_RGB(0, 0, 255), // font color
-                            1);
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
@@ -215,195 +306,25 @@ int32_t main(int32_t argc, char **argv)
                 // Display image on your screen.
                 if (VERBOSE)
                 {
-                    cv::imshow(sharedMemory->name().c_str(), img);
+                    // cv::imshow(sharedMemory->name().c_str(), img);
                     cv::imshow("blueImgWithPoint", cropedImg);
                     //cv::imshow("YellowImgWithPoint", yellowResultImg);
                     cv::waitKey(1);
                 }
             }
             myFile.close();
-            double percentage = NrOfCorrectAngle / frames;
-            double percentageCounter = NrOfCorrectAngleCounter / frames;
+            // double percentage = NrOfCorrectAngle / frames;
+            // double percentageCounter = NrOfCorrectAngleCounter / frames;
 
-            std::cout << "Percentage: " << std::to_string(percentage) << std::endl;
-            std::cout << "Percentage Counter: " << std::to_string(percentageCounter) << std::endl;
+            // std::cout << "Percentage: " << std::to_string(percentage) << std::endl;
+            // std::cout << "Percentage Counter: " << std::to_string(percentageCounter) << std::endl;
 
-            std::cout << "Frames: " << std::to_string(frames) << std::endl;
-            std::cout << "Nr Correct Angle: " << std::to_string(NrOfCorrectAngle) << std::endl;
-            std::cout << "Nr Correct Angle  Counter: " << std::to_string(NrOfCorrectAngleCounter) << std::endl;
+            // std::cout << "Frames: " << std::to_string(frames) << std::endl;
+            // std::cout << "Nr Correct Angle: " << std::to_string(NrOfCorrectAngle) << std::endl;
+            // std::cout << "Nr Correct Angle  Counter: " << std::to_string(NrOfCorrectAngleCounter) << std::endl;
         }
         retCode = 0;
     }
 
     return retCode;
-}
-
-cv::Point2f drawContourWithCentroidPoint(cv::Mat inputImage, cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor)
-{
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
-    // convert to gray scale
-    // draw blue cones' contour
-    cv::Mat img_channels[3];
-    cv::split(inputImage, img_channels);
-    cv::Mat img_gray = img_channels[0];
-    // cv::Mat canny_img;
-    // cv::Canny(img_gray, canny_img, 50, 60);
-    cv::findContours(img_gray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-    // get the moments
-    std::vector<cv::Moments> mu(contours.size());
-    std::vector<cv::Point2f> mc(mu.size());
-    cv::Point2f cone;
-
-    if (contours.size() > 0)
-    {
-        for (int i = 0; i < contours.size(); i++)
-        {
-            if (cv::contourArea(contours[i]) > contourArea)
-            {
-                mu[i] = cv::moments(contours[i], false);
-            }
-        }
-
-        // get the centroid of figures.
-        for (int i = 0; i < mu.size(); i++)
-        {
-            mc[i] = cv::Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
-        }
-        for (int i = 0; i < mu.size(); i++)
-        {
-            circle(outputImage, mc[i], 4, centroidColor, -1, 8, 0);
-
-            if (mc[i].x > 0)
-            {
-                // then we have a value
-                cone = mc[i];
-            }
-            //std::cout << "x: " << mc[i].x << "y: " << mc[i].y << std::endl;
-        }
-    }
-    cv::drawContours(outputImage, contours, -1, contourColor, 2);
-    return cone;
-}
-
-// Method to calculate the steering wheel angle. Works for clockwise (blue cones on the left) about 50% correct.
-// When running this counter clockwise we get about 20 %
-double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone, int timestamp)
-{
-    // car position 0 480/2 240
-
-    int carPosition = 240;
-    int middleLeft = 120;
-    int middleRight = 360;
-
-    double angle = 0.0;
-
-    // 120 240 360 480
-
-    // Right is negative
-    // left is positive
-
-    if (yellowCone.x > middleRight && blueCone.x < middleLeft)
-    {
-        // ---------------------------
-        // |  X   |      |      |  X  |
-        // ---------------------------
-        // Dont turn
-        angle = 0.0;
-    }
-    else if (blueCone.x < carPosition && blueCone.x > middleLeft)
-    {
-        // ---------------------------
-        // |     |   x   |      |     |
-        // ---------------------------
-        // Turn Right negative value
-        angle = -0.1;
-    }
-    else if (blueCone.x > carPosition && blueCone.x > middleRight)
-    {
-        // ---------------------------
-        // |     |     |   x  |     |
-        // ---------------------------
-        // Turn sharp Right negative value
-        angle = -0.2;
-    }
-    else if (yellowCone.x < middleLeft && yellowCone.x > carPosition)
-    {
-        // ---------------------------
-        // |     |     |   x  |     |
-        // ---------------------------
-        // Turn Left
-        angle = 0.1;
-    }
-    else if (yellowCone.x < carPosition && yellowCone.x > middleLeft)
-    {
-        // ---------------------------
-        // |     |  x   |     |     |
-        // ---------------------------
-        // Turn sharp Left negative value
-        angle = 0.2;
-    }
-
-    return angle;
-}
-
-// Method to calculate the steering wheel angle. Works for counter clockwise (yellow cones on the left) about 50% correct.
-// When running this counter clockwise we get about 20 %
-double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yellowCone, int timestamp)
-{
-    // car position 0 480/2 240
-
-    int carPosition = 240;
-    int middleLeft = 120;
-    int middleRight = 360;
-
-    double angle = 0.0;
-
-    // 120 240 360 480
-
-    // Right is negative
-    // left is positive
-
-    if (blueCone.x > middleRight && yellowCone.x < middleLeft)
-    {
-        // ---------------------------
-        // |  X   |      |      |  X  |
-        // ---------------------------
-        // Dont turn
-        angle = 0.0;
-    }
-    else if (yellowCone.x < carPosition && yellowCone.x > middleLeft)
-    {
-        // ---------------------------
-        // |     |   x   |      |     |
-        // ---------------------------
-        // Turn Right negative value
-        angle = -0.1;
-    }
-    else if (yellowCone.x > carPosition && yellowCone.x > middleRight)
-    {
-        // ---------------------------
-        // |     |     |   x  |     |
-        // ---------------------------
-        // Turn sharp Right negative value
-        angle = -0.2;
-    }
-    else if (blueCone.x < middleLeft && blueCone.x > carPosition)
-    {
-        // ---------------------------
-        // |     |     |   x  |     |
-        // ---------------------------
-        // Turn Left
-        angle = 0.1;
-    }
-    else if (blueCone.x < carPosition && blueCone.x > middleLeft)
-    {
-        // ---------------------------
-        // |     |  x   |     |     |
-        // ---------------------------
-        // Turn sharp Left negative value
-        angle = 0.2;
-    }
-
-    return angle;
 }
