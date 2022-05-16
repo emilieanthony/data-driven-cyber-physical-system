@@ -397,6 +397,12 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
         // ---------------------------   
         // Turn sharp Right negative value
         angle = -0.2;
+    }else if (yellowCone.x > carPosition && yellowCone.x > middleRight) {
+        // ---------------------------
+        // |     |     |     |   x  |
+        // ---------------------------   
+        // Turn supersharp Right negative value
+        angle = -0.25;
     } else if (blueCone.x < middleLeft && blueCone.x > carPosition) {
         // ---------------------------
         // |     |     |   x  |     |
@@ -407,8 +413,14 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
         // ---------------------------
         // |     |  x   |     |     |
         // ---------------------------   
-        // Turn sharp Left negative value
+        // Turn sharp Left value
         angle = 0.2;
+    } else if (blueCone.x < carPosition && blueCone.x < middleLeft) {
+        // ---------------------------
+        // |  x   |     |     |     |
+        // ---------------------------   
+        // Turn supersharp Left value
+        angle = 0.25;
     }
 
     return angle;
