@@ -24,7 +24,10 @@ import cluonDataStructures_pb2
 import opendlv_standard_message_set_v0_9_9_pb2
 # Messages from individual message set
 import example_pb2
+import csv
 
+
+frame = 0
 
 ################################################################################
 # Extract and print an Envelope's payload based on it's dataType.
@@ -62,11 +65,22 @@ def extractAndPrintPayload(dataType, payload):
     if dataType == 1090:
         messageFromPayload = opendlv_standard_message_set_v0_9_9_pb2.opendlv_proxy_GroundSteeringRequest()
         messageFromPayload.ParseFromString(payload)
-        print("Payload: %s" % (str(messageFromPayload)))
+        print("groundSteering: %s" % (str(messageFromPayload.groundSteering)))
+        value = messageFromPayload.groundSteering
+        global frame
+        frame += 1
+        groundSteering.append(value)
+
     if dataType == 1030:
         messageFromPayload = opendlv_standard_message_set_v0_9_9_pb2.opendlv_proxy_AccelerationReading()
         messageFromPayload.ParseFromString(payload)
         print("Payload: %s" % (str(messageFromPayload)))
+    if dataType == 1055:
+        messageFromPayload = opendlv_standard_message_set_v0_9_9_pb2.opendlv_proxy_ImageReading()
+        messageFromPayload.ParseFromString(payload)
+
+        print("Payload: %s" % (str(messageFromPayload)))
+        
         
 ################################################################################
 # Print an Envelope's meta information.
@@ -78,6 +92,14 @@ def printEnvelope(e):
     extractAndPrintPayload(e.dataType, e.serializedData)
     print()
 
+def writeToCsv():
+    with open("example.csv", "wb") as file:
+        
+            writer = csv.writer(file)
+            writer.writerow(map(lambda x: [x], groundSteering))    
+    file.close()    
+    
+groundSteering=[]
 
 ################################################################################
 # Main entry point.
@@ -86,7 +108,6 @@ if len(sys.argv) != 2:
     print("  Usage: %s example.rec" % (str(sys.argv[0])))
     sys.exit()
 
-
 # Read Envelopes from .rec file.
 with open(sys.argv[1], "rb") as f:
     buf = b""
@@ -94,7 +115,6 @@ with open(sys.argv[1], "rb") as f:
     expectedBytes = 0
     LENGTH_ENVELOPE_HEADER = 5
     consumedEnvelopeHeader = False
-
     byte = f.read(1)
     while byte != "":
         buf =  b"".join([buf, byte])
@@ -130,4 +150,7 @@ with open(sys.argv[1], "rb") as f:
         # End processing at file's end.
         if not byte:
             break
+    # writeToCsv()
+    print(frame)
+
 f.close()

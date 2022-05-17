@@ -2,9 +2,9 @@ import cv2
 import time
 import sys
 import numpy as np
-from multiprocessing import shared_memory
+import math
+import csv
 
-shm = shared_memory.SharedMemory(name='img')
 
 def build_model(is_cuda):
     net = cv2.dnn.readNet("models/conedetector.onnx")
@@ -96,7 +96,16 @@ def format_yolov5(frame):
     result = np.zeros((_max, _max, 3), np.uint8)
     result[0:row, 0:col] = frame
     return result
-
+def calculateAngle(data):
+    # box = np.array([left, top, width, height])
+    xf = data[0][2][0]
+    yf = data[0][2][1]
+    xs = data[1][2][0]
+    ys = data[1][2][1]
+    dx = xs - xf
+    dy = ys - xf
+    result = dx/math.sqrt(dx**2+dy**2)
+    return result
 
 colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
 
@@ -109,6 +118,8 @@ start = time.time_ns()
 frame_count = 0
 total_frames = 0
 fps = -1
+steeringOutput = []
+
 
 while True:
 
@@ -124,12 +135,44 @@ while True:
 
     frame_count += 1
     total_frames += 1
+    
+    yc = []
+    bc = []
+    # calculate ground steering angle
+    for box in zip(class_ids, confidences, boxes):
+        if box[2][1] > 240:        # if box.boxes.top is below the middle point
 
+            if box[0]== 0:         #class_id ==0 =>blue cone
+
+                bc.append(box)
+            else:                 #class_id ==1 =>yellow cone
+
+                yc.append(box)
+    # print(yc)
+    # print(bc)
+    # calculate angle 
+    b_angle = 0
+    y_angle = 0
+    steeringAngle = 0
+    if len(bc)>=2:
+        b_angle = calculateAngle(bc)
+    if len(yc)>=2:
+        y_angle = calculateAngle(yc)
+    if abs(b_angle) >= abs(y_angle):
+        steeringAngle = b_angle*0.3
+    else:
+        steeringAngle = y_angle*0.3    
+
+    steeringOutput.append(steeringAngle)
+    
+        
+        
     for (classid, confidence, box) in zip(class_ids, confidences, boxes):
          color = colors[int(classid) % len(colors)]
-         cv2.rectangle(frame, box, color, 2)
-         cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
-         cv2.putText(frame, class_list[classid], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+         if box[1]>240:
+            cv2.rectangle(frame, box, color, 2)
+            cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
+            cv2.putText(frame, class_list[classid], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
 
     if frame_count >= 30:
         end = time.time_ns()
@@ -142,9 +185,16 @@ while True:
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     cv2.imshow("output", frame)
+    yc.clear()
+    bc.clear()
 
     if cv2.waitKey(1) > -1:
         print("finished by user")
         break
+
+
+with open('result.csv', 'w') as file:
+    writer = csv.writer(file)
+    writer.writerow(steeringOutput)
 
 print("Total frames: " + str(total_frames))
