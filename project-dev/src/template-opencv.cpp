@@ -209,14 +209,6 @@ int32_t main(int32_t argc, char **argv)
                             1.0,
                             CV_RGB(0, 0, 255),          // font color
                             1);
-                cv::putText(img,                        // target image
-                            cordinates,                 // text
-                            cv::Point(10, 50),          // top-left position
-                            cv::FONT_HERSHEY_PLAIN,
-                            1.0,
-                            CV_RGB(0, 0, 255),          // font color
-                            1);
-
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
