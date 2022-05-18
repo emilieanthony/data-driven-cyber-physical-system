@@ -28,25 +28,25 @@
 /*---------------- Global variables ---------------------*/
 
 // Yellow hsv values
-const int hMinY = 15;  // hue
-const int hMaxY = 25;  // hue
-const int sMinY = 75;  // saturation
-const int sMaxY = 185; // saturation
-const int vMinY = 147; // value
-const int vMaxY = 255; // value
+const int MIN_HUE_Y = 15; 
+const int MAX_HUE_Y = 25;  
+const int MIN_SAT_Y = 75;  
+const int MAX_SAT_Y = 185; 
+const int MIN_VAL_Y = 147; 
+const int MAX_VAL_Y = 255; 
 
 // Blue hsv values
-const int hMinB = 100; // hue
-const int hMaxB = 140; // hue
-const int sMinB = 120; // saturation
-const int sMaxB = 255; // saturation
-const int vMinB = 40;  // value
-const int vMaxB = 255; // value
+const int MIN_HUE_B = 100; 
+const int MAX_HUE_B = 140; 
+const int MIN_SAT_B = 120; 
+const int MAX_SAT_B = 255; 
+const int MIN_VAL_B = 40;  
+const int MAX_VAL_B = 255; 
 
 // Car's position and thresholds
-const int carPosition = 240;
-const int middleLeft = 120;
-const int middleRight = 360;
+const int CAR_POSITION = 240;
+const int LEFT_THRESHOLD = 120;
+const int RIGHT_THRESHOLD = 360;
 
 /*---------------- Function definitions ---------------------*/
 cv::Point2f  drawContourWithCentroidPoint(cv::Mat inputImage,cv::Mat outputImage, int contourArea, cv::Scalar contourColor, cv::Scalar centroidColor);
@@ -150,8 +150,8 @@ int32_t main(int32_t argc, char **argv)
                 cropedImg = img(cv::Range(310, 360), cv::Range(0, 640));
                 cv::cvtColor(cropedImg, hsvImg, CV_BGR2HSV); // Convert Original Image to HSV Thresh Image
 
-                cv::inRange(hsvImg, cv::Scalar(hMinB, sMinB, vMinB), cv::Scalar(hMaxB, sMaxB, vMaxB), blueThreshImg);
-                cv::inRange(hsvImg, cv::Scalar(hMinY, sMinY, vMinY), cv::Scalar(hMaxY, sMaxY, vMaxY), yellowThreshImg);
+                cv::inRange(hsvImg, cv::Scalar(MIN_HUE_B, MIN_SAT_B, MIN_VAL_B), cv::Scalar(MAX_HUE_B, MAX_SAT_B, MAX_VAL_B), blueThreshImg);
+                cv::inRange(hsvImg, cv::Scalar(MIN_HUE_Y, MIN_SAT_Y, MIN_VAL_Y), cv::Scalar(MAX_HUE_Y, MAX_SAT_Y, MAX_VAL_Y), yellowThreshImg);
                 cv::Scalar blue = cv::Scalar(255,0,0);
                 cv::Scalar red = cv::Scalar(0,0,255);
                 cv::Scalar green = cv::Scalar(0,255,0);
@@ -288,46 +288,46 @@ double calculateSteeringWheelAngle(cv::Point2f blueCone, cv::Point2f yellowCone,
     
     double angle = 0.0;
 
-    if(blueCone.x < middleLeft || yellowCone.x > middleRight){
+    if(blueCone.x < LEFT_THRESHOLD || yellowCone.x > RIGHT_THRESHOLD){
         // ---------------------------
         // |  B   |      |      |  Y  |
         // ---------------------------
         // No turn
         angle = 0.0;
 
-    } else if (blueCone.x < carPosition && blueCone.x > middleLeft){
+    } else if (blueCone.x < CAR_POSITION && blueCone.x > LEFT_THRESHOLD){
         // ---------------------------
         // |     |   B   |      |     |
         // ---------------------------   
         // Turn right case 1
         angle = -0.1;
 
-    } else if (blueCone.x > carPosition && blueCone.x < middleRight) {
+    } else if (blueCone.x > CAR_POSITION && blueCone.x < RIGHT_THRESHOLD) {
         // ---------------------------
         // |     |     |   B  |     |
         // ---------------------------   
         // Turn right case 2
         angle = -0.2;
 
-    } else if (blueCone.x < 480 && blueCone.x > middleRight) {
+    } else if (blueCone.x < 480 && blueCone.x > RIGHT_THRESHOLD) {
         // ---------------------------
         // |     |     |     |  B   |
         // ---------------------------   
         // Turn right case 3
         angle = -0.25;
-    } else if (yellowCone.x < middleRight && yellowCone.x > carPosition) {
+    } else if (yellowCone.x < RIGHT_THRESHOLD && yellowCone.x > CAR_POSITION) {
         // ---------------------------
         // |     |     |   Y  |     |
         // ---------------------------   
         // Turn left case 1
         angle = 0.1;
-    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft) {
+    } else if (yellowCone.x < CAR_POSITION && yellowCone.x > LEFT_THRESHOLD) {
         // ---------------------------
         // |     |  Y   |     |     |
         // ---------------------------   
         // Turn left case 2
         angle = 0.2;
-    } else if (yellowCone.x > 5 && yellowCone.x < middleLeft) {
+    } else if (yellowCone.x > 5 && yellowCone.x < LEFT_THRESHOLD) {
         // ---------------------------
         // | Y   |     |     |     |
         // ---------------------------   
@@ -343,45 +343,45 @@ double calculateSteeringWheelAngleCounter(cv::Point2f blueCone, cv::Point2f yell
 
     double angle = 0.0;
 
-    if(yellowCone.x < middleLeft || blueCone.x > middleRight){
+    if(yellowCone.x < LEFT_THRESHOLD || blueCone.x > RIGHT_THRESHOLD){
         // ---------------------------
         // |  Y   |      |      |  B  |
         // ---------------------------
         // No turn
         angle = 0.0;
 
-    } else if (yellowCone.x < carPosition && yellowCone.x > middleLeft){
+    } else if (yellowCone.x < CAR_POSITION && yellowCone.x > LEFT_THRESHOLD){
         // ---------------------------
         // |     |   Y   |      |     |
         // ---------------------------   
         // Turn right case 1
         angle = -0.1;
 
-    } else if (yellowCone.x > carPosition && yellowCone.x < middleRight) {
+    } else if (yellowCone.x > CAR_POSITION && yellowCone.x < RIGHT_THRESHOLD) {
         // ---------------------------
         // |     |     |  Y |     |
         // ---------------------------   
         // Turn right case 2
         angle = -0.2;
-    }else if ( yellowCone.x > middleRight && yellowCone.x < 480) {
+    }else if ( yellowCone.x > RIGHT_THRESHOLD && yellowCone.x < 480) {
         // ---------------------------
         // |     |     |     |   Y  |
         // ---------------------------   
         // Turn right case 3
         angle = -0.25;
-    } else if (blueCone.x < middleLeft && blueCone.x > carPosition) {
+    } else if (blueCone.x < LEFT_THRESHOLD && blueCone.x > CAR_POSITION) {
         // ---------------------------
         // |     |     |   B  |     |
         // ---------------------------   
         // Turn left case 1
         angle = 0.1;
-    } else if (blueCone.x < carPosition && blueCone.x > middleLeft) {
+    } else if (blueCone.x < CAR_POSITION && blueCone.x > LEFT_THRESHOLD) {
         // ---------------------------
         // |     |  B  |     |     |
         // ---------------------------   
         // Turn left case 2
         angle = 0.2;
-    } else if (blueCone.x < middleLeft && blueCone.x > 5) {
+    } else if (blueCone.x < LEFT_THRESHOLD && blueCone.x > 5) {
         // ---------------------------
         // |  B   |     |     |     |
         // ---------------------------   
