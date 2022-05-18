@@ -25,6 +25,69 @@ A more detailed description will be added during the progression of the project.
 - git: [Installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - an IDE (we recommand to use Vscode)
 
+### Run the project
+
+Start the openddlv-vehicle view
+
+~~~
+docker run --rm --init --net=host --name=opendlv-vehicle-view -v $PWD:/opt/vehicle-view/recordings -v /var/run/docker.sock:/var/run/docker.sock -p 8081:8081 chalmersrevere/opendlv-vehicle-view-multi:v0.0.60
+~~~
+
+Start the h264-decoder
+
+~~~
+docker run --rm -ti --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp h264decoder:v0.0.4 --cid=253 --name=img
+~~~
+
+Build the docker container for the project
+
+~~~
+docker build -f $(pwd)/project-dev/src/dockerfile_buildtest --no-cache -t group15-opencv .
+~~~
+
+Disable access control
+
+~~~
+xhost +
+~~~
+
+Run the projects docker container
+
+~~~
+docker run --rm -ti --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp group15-opencv:latest --cid=253 --name=img --width=640 --height=480 --verbose
+~~~
+
+#### Compile for development
+
+To use this docker file for development you need to have all other docker containers (opendlv-vehicle-view, h264decoder) running, playing video playback and run following cmd under src folder:
+
+~~~
+docker build -f $(pwd)/dockerfile_dev -t group15-opencv-dev . 
+~~~
+
+Run the container
+
+~~~
+docker run -it --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp -v $(pwd):/opt/sources/dev group15-opencv-dev
+~~~
+
+Then you could use VScode's docker extension (VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) to attach vscode to the container. Upon the new vscode window connected to the container, you should be able to edit the template-opencv.cpp file. There are 2 template-opencv.cpp file, one is located at /opt/sources and another is located at /opt/sources/dev folder. The file in /opt/sources is not sync with the file outside the docker, while the file in /opt/sources/dev is sync with the file outside the docker. You could just edit the template-opencv.cpp file in the /opt/sources/dev for the development. To run the application, you will run following cmd under /opt/sources/dev:
+
+~~~
+mkdir build && \
+cd build && \
+cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/tmp .. && \
+make && make install
+~~~
+
+Then you will find a binary file named template-opencv in the /opt/sources/dev/build folder. To run the app you should run following cmd:
+
+~~~
+./template-opencv --cid=253 --name=img --width=640 --height=480 --verbose
+~~~
+
+### Example Project
+
 After you installed all required tools, you could use the following commands to clone this repo and set up at your computer.
 
 ~~~
