@@ -25,8 +25,7 @@ A more detailed description will be added during the progression of the project.
 - git: [Installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - an IDE (we recommand to use Vscode)
 
-
-### Project Final Implementation
+### Run the project
 
 Start the openddlv-vehicle view
 
@@ -72,7 +71,7 @@ Run the container
 docker run -it --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp -v $(pwd):/opt/sources/dev group15-opencv-dev
 ~~~
 
-Then you could use VScode's docker extension(VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) to attach to the vscode to the container. Upon the new vscode window connected to the container, you should be able to edit the template-opencv.cpp file. There are 2 template-opencv.cpp file, one is located at /opt/sources and another is located at /opt/sources/dev folder. The file in /opt/sources is not sync with the file outside the docker, while the file in /opt/sources/dev is sync with the file outside the docker. You could just edit the template-opencv.cpp file in the /opt/sources/dev for the development. To run the application, you will run following cmd under /opt/sources/dev:
+Then you could use VScode's docker extension (VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) to attach vscode to the container. Upon the new vscode window connected to the container, you should be able to edit the template-opencv.cpp file. There are 2 template-opencv.cpp file, one is located at /opt/sources and another is located at /opt/sources/dev folder. The file in /opt/sources is not sync with the file outside the docker, while the file in /opt/sources/dev is sync with the file outside the docker. You could just edit the template-opencv.cpp file in the /opt/sources/dev for the development. To run the application, you will run following cmd under /opt/sources/dev:
 
 ~~~
 mkdir build && \
@@ -86,7 +85,6 @@ Then you will find a binary file named template-opencv in the /opt/sources/dev/b
 ~~~
 ./template-opencv --cid=253 --name=img --width=640 --height=480 --verbose
 ~~~
-
 
 ### Example Project
 
