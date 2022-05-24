@@ -67,6 +67,19 @@ release:
     - docker buildx create --use
     - docker buildx build --push --platform linux/amd64,linux/arm/v7 -f $(pwd)/project-dev/src/dockerfile_buildtest -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
 
+
+
+  analyse:
+    image: ubuntu:18.04
+    tags: 
+      - docker-build
+    stage: build
+    only:
+      - main
+      - merge_requests
+    except:
+      - tags
+    
 # coverage:
 #  image: ubuntu:18.04
 #  stage: deploy
