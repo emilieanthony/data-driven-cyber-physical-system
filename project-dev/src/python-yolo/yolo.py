@@ -31,7 +31,7 @@ def detect(image, net):
     return preds
 
 def load_capture():
-    capture = cv2.VideoCapture("145641.mp4")
+    capture = cv2.VideoCapture("input.mp4")
     return capture
 
 def load_classes():
